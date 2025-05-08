@@ -2,13 +2,20 @@ package main
 
 import (
 	"fmt"
+	"github.com/dr8co/monke/repl"
+	"os"
+	"os/user"
 )
 
 func main() {
-	s := "gopher"
-	fmt.Printf("Hello and welcome, %s!\n", s)
+	usr, err := user.Current()
 
-	for i := 1; i <= 5; i++ {
-		fmt.Println("i =", 100/i)
+	if err != nil {
+		panic(err)
 	}
+
+	fmt.Println("Hello", usr.Username, "This is the Monkey programming language!")
+	fmt.Println("Feel free to type in commands")
+
+	repl.Start(os.Stdin, os.Stdout)
 }

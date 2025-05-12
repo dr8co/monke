@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/dr8co/monke/lexer"
-	"github.com/dr8co/monke/token"
+	"github.com/dr8co/monke/parser"
 	"io"
 )
 
@@ -25,12 +25,35 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
+		p := parser.New(l)
 
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			_, errs := fmt.Fprintf(out, "%+v\n", tok)
-			if errs != nil {
-				panic(errs)
-			}
+		program := p.ParseProgram()
+		if len(p.Errors()) != 0 {
+			printParseErrors(out, p.Errors())
+			continue
+		}
+
+		_, err = io.WriteString(out, program.String())
+		if err != nil {
+			panic(err)
+		}
+		_, err = io.WriteString(out, "\n")
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func printParseErrors(out io.Writer, errors []string) {
+	_, err := io.WriteString(out, "parser errors:\n")
+	if err != nil {
+		panic(err)
+	}
+
+	for _, msg := range errors {
+		_, err = io.WriteString(out, "\t"+msg+"\n")
+		if err != nil {
+			panic(err)
 		}
 	}
 }

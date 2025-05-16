@@ -3,6 +3,7 @@ package repl
 import (
 	"bufio"
 	"fmt"
+	"github.com/dr8co/monke/evaluator"
 	"github.com/dr8co/monke/lexer"
 	"github.com/dr8co/monke/parser"
 	"io"
@@ -33,13 +34,12 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		_, err = io.WriteString(out, program.String())
-		if err != nil {
-			panic(err)
-		}
-		_, err = io.WriteString(out, "\n")
-		if err != nil {
-			panic(err)
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			_, err = io.WriteString(out, evaluated.Inspect()+"\n")
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }

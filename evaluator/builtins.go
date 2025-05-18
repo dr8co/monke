@@ -3,7 +3,7 @@ package evaluator
 import "github.com/dr8co/monke/object"
 
 var builtins = map[string]*object.Builtin{
-	"len": &object.Builtin{
+	"len": {
 		Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
 				return newError("wrong number of arguments. got=%d, want=1", len(args))
@@ -17,6 +17,22 @@ var builtins = map[string]*object.Builtin{
 
 			default:
 				return newError("argument to `len` not supported, got %s", args[0].Type())
+			}
+		},
+	},
+	"first": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 1 {
+				return newError("wrong number of arguments. got=%d, want=1", len(args))
+			}
+			switch arg := args[0].(type) {
+			case *object.Array:
+				if len(arg.Elements) > 0 {
+					return arg.Elements[0]
+				}
+				return NULL
+			default:
+				return newError("argument to `first` not supported, got %s", args[0].Type())
 			}
 		},
 	},

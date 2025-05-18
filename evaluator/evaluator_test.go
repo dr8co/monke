@@ -296,6 +296,23 @@ func TestClosures(t *testing.T) {
 	testIntegerObject(t, testEval(input), 4)
 }
 
+func TestEnclosingEnvironments(t *testing.T) {
+	input := `
+    let first = 10;
+    let second = 10;
+    let third = 10;
+
+    let ourFunction = fn(first) {
+      let second = 20;
+
+      first + second + third;
+    };
+
+    ourFunction(20) + first + second;`
+
+	testIntegerObject(t, testEval(input), 70)
+}
+
 func testNullObject(t *testing.T, obj object.Object) bool {
 	if obj != NULL {
 		t.Errorf("object is not NULL. got=%T (%+v)", obj, obj)

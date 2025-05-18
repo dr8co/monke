@@ -361,6 +361,9 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`first([1, 2, 3])`, 1},
 		{`first([])`, nil},
 		{`first(1)`, "argument to `first` not supported, got INTEGER"},
+		{`last([1, 2, 3])`, 3},
+		{`last([])`, nil},
+		{`last(1)`, "argument to `last` not supported, got INTEGER"},
 	}
 
 	for _, tt := range tests {

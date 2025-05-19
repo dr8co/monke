@@ -1,3 +1,14 @@
+// Package ast defines the Abstract Syntax Tree (AST) for the Monke programming language.
+//
+// The AST represents the structure of a Monke program after it has been parsed.
+// It consists of nodes that represent different language constructs such as expressions,
+// statements, and literals. The AST is used by the evaluator to execute the program.
+//
+// Key components:
+// - Node: The base interface for all AST nodes
+// - Statement: Interface for nodes that represent statements (e.g., let, return)
+// - Expression: Interface for nodes that represent expressions (e.g., literals, function calls)
+// - Program: The root node of the AST, containing a list of statements
 package ast
 
 import (
@@ -6,25 +17,39 @@ import (
 	"strings"
 )
 
+// Node is the base interface for all AST nodes.
+// Every node in the AST must implement this interface.
 type Node interface {
+	// TokenLiteral returns the literal value of the token associated with this node.
 	TokenLiteral() string
+	// String returns a string representation of the node for debugging and testing.
 	String() string
 }
 
+// Statement is the interface for all statement nodes in the AST.
+// Statements are language constructs that perform actions but don't produce values.
+// Examples include let statements, return statements, and expression statements.
 type Statement interface {
 	Node
-	statementNode()
+	statementNode() // Marker method to identify statement nodes
 }
 
+// Expression is the interface for all expression nodes in the AST.
+// Expressions are language constructs that produce values.
+// Examples include literals, identifiers, function calls, and operators.
 type Expression interface {
 	Node
-	expressionNode()
+	expressionNode() // Marker method to identify expression nodes
 }
 
+// Program is the root node of the AST.
+// It represents a complete Monke program and contains a list of statements.
 type Program struct {
-	Statements []Statement
+	Statements []Statement // The list of statements in the program
 }
 
+// TokenLiteral returns the literal value of the first token in the program.
+// If the program has no statements, it returns an empty string.
 func (p *Program) TokenLiteral() string {
 	if len(p.Statements) > 0 {
 		return p.Statements[0].TokenLiteral()
@@ -33,6 +58,8 @@ func (p *Program) TokenLiteral() string {
 	}
 }
 
+// String returns a string representation of the program.
+// It concatenates the string representations of all statements in the program.
 func (p *Program) String() string {
 	var out bytes.Buffer
 
@@ -42,23 +69,34 @@ func (p *Program) String() string {
 	return out.String()
 }
 
+// Identifier represents a name in the program, such as a variable or function name.
 type Identifier struct {
-	Token token.Token
-	Value string
+	Token token.Token // The token containing the identifier
+	Value string      // The value (name) of the identifier
 }
 
-func (id *Identifier) expressionNode()      {}
+func (id *Identifier) expressionNode() {}
+
+// TokenLiteral returns the literal value of the identifier token.
 func (id *Identifier) TokenLiteral() string { return id.Token.Literal }
-func (id *Identifier) String() string       { return id.Value }
 
+// String returns the value (name) of the identifier.
+func (id *Identifier) String() string { return id.Value }
+
+// LetStatement represents a variable binding statement (e.g., "let x = 5;").
 type LetStatement struct {
-	Token token.Token
-	Name  *Identifier
-	Value Expression
+	Token token.Token // The 'let' token
+	Name  *Identifier // The identifier being bound
+	Value Expression  // The expression that produces the value to bind
 }
 
-func (ls *LetStatement) statementNode()       {}
+func (ls *LetStatement) statementNode() {}
+
+// TokenLiteral returns the literal value of the 'let' token.
 func (ls *LetStatement) TokenLiteral() string { return ls.Token.Literal }
+
+// String returns a string representation of the let statement.
+// Format: "let <identifier> = <expression>;"
 func (ls *LetStatement) String() string {
 	var out bytes.Buffer
 
@@ -73,13 +111,19 @@ func (ls *LetStatement) String() string {
 	return out.String()
 }
 
+// ReturnStatement represents a return statement (e.g., "return 5;").
 type ReturnStatement struct {
-	Token       token.Token
-	ReturnValue Expression
+	Token       token.Token // The 'return' token
+	ReturnValue Expression  // The expression that produces the return value
 }
 
-func (rs *ReturnStatement) statementNode()       {}
+func (rs *ReturnStatement) statementNode() {}
+
+// TokenLiteral returns the literal value of the 'return' token.
 func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
+
+// String returns a string representation of the return statement.
+// Format: "return <expression>;"
 func (rs *ReturnStatement) String() string {
 	var out bytes.Buffer
 	out.WriteString(rs.TokenLiteral() + " ")

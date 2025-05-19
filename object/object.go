@@ -1,3 +1,17 @@
+// Package object defines the object system for the Monke programming language.
+//
+// This package implements the runtime object system that represents values
+// during the execution of a Monke program. It defines various types of objects
+// such as integers, booleans, strings, arrays, hashes, functions, and built-ins.
+//
+// Key components:
+// - Object interface: The base interface for all runtime values
+// - Various object types (Integer, Boolean, String, Array, Hash, Function, etc.)
+// - Environment: Stores variable bindings during execution
+// - Hashable interface: For objects that can be used as hash keys.
+//
+// The evaluator uses the object system to represent and manipulate values
+// during program execution.
 package object
 
 import (

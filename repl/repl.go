@@ -1,3 +1,18 @@
+// Package repl implements the Read-Eval-Print Loop for the Monke programming language.
+//
+// The REPL provides an interactive interface for users to enter Monke code,
+// have it evaluated, and see the results immediately. It uses the Charm libraries
+// (Bubbletea, Bubbles, and Lipgloss) to create a modern, user-friendly terminal
+// interface with features like syntax highlighting and command history.
+//
+// Key features:
+// - Interactive command input and execution
+// - Command history tracking
+// - Styled output with different colors for results and errors
+// - Persistent environment across commands
+//
+// The main entry point is the Start function, which initializes and runs the REPL
+// with the given username.
 package repl
 
 import (

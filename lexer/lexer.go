@@ -1,3 +1,18 @@
+// Package lexer implements the lexical analyzer for the Monke programming language.
+//
+// The lexer is responsible for breaking down the source code into tokens,
+// which are the smallest units of meaning in the language. It reads the input
+// character by character and produces a stream of tokens that can be processed
+// by the parser.
+//
+// Key features:
+// - Tokenization of all language elements (keywords, identifiers, literals, operators, etc.)
+// - Handling of whitespace and comments
+// - Error detection for illegal characters
+// - Support for various token types defined in the token package
+//
+// The main entry point is the New function, which creates a new Lexer instance,
+// and the NextToken method, which returns the next token from the input.
 package lexer
 
 import "github.com/dr8co/monke/token"
@@ -19,12 +34,17 @@ func (l *Lexer) readChar() {
 	l.readPosition += 1
 }
 
+// New creates a new Lexer with the given input string.
+// It initializes the lexer and reads the first character.
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
 	l.readChar()
 	return l
 }
 
+// NextToken reads the next token from the input.
+// It skips whitespace, identifies the token type based on the current character,
+// and returns a token with the appropriate type and literal value.
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 

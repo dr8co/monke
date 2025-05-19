@@ -1,3 +1,18 @@
+// Package parser implements the syntactic analyzer for the Monke programming language.
+//
+// The parser takes a stream of tokens from the lexer and constructs an Abstract
+// Syntax Tree (AST) that represents the structure of the program. It implements
+// a recursive descent parser with Pratt parsing (precedence climbing) for expressions.
+//
+// Key features:
+// - Top-down parsing of statements and expressions
+// - Precedence-based expression parsing
+// - Error reporting for syntax errors
+// - Support for all language constructs (statements, expressions, literals, etc.)
+//
+// The main entry point is the New function, which creates a new Parser instance,
+// and the ParseProgram method, which parses a complete Monke program and returns
+// an AST.
 package parser
 
 import (

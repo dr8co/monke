@@ -12,7 +12,6 @@
 package ast
 
 import (
-	"bytes"
 	"github.com/dr8co/monke/token"
 	"strings"
 )
@@ -61,7 +60,7 @@ func (p *Program) TokenLiteral() string {
 // String returns a string representation of the program.
 // It concatenates the string representations of all statements in the program.
 func (p *Program) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	for _, s := range p.Statements {
 		out.WriteString(s.String())
@@ -69,7 +68,7 @@ func (p *Program) String() string {
 	return out.String()
 }
 
-// Identifier represents a name in the program, such as a variable or function name.
+// An Identifier represents a name in the program, such as a variable or function name.
 type Identifier struct {
 	Token token.Token // The token containing the identifier
 	Value string      // The value (name) of the identifier
@@ -98,7 +97,7 @@ func (ls *LetStatement) TokenLiteral() string { return ls.Token.Literal }
 // String returns a string representation of the let statement.
 // Format: "let <identifier> = <expression>;"
 func (ls *LetStatement) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	out.WriteString(ls.TokenLiteral() + " ")
 	out.WriteString(ls.Name.String())
@@ -125,7 +124,7 @@ func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
 // String returns a string representation of the return statement.
 // Format: "return <expression>;"
 func (rs *ReturnStatement) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 	out.WriteString(rs.TokenLiteral() + " ")
 
 	if rs.ReturnValue != nil {
@@ -187,7 +186,7 @@ func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
 // String returns a string representation of the prefix expression.
 // Format: "(<operator><expression>)"
 func (pe *PrefixExpression) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	out.WriteString("(")
 	out.WriteString(pe.Operator)
@@ -214,7 +213,7 @@ func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
 // String returns a string representation of the infix expression.
 // Format: "(<left-expression> <operator> <right-expression>)"
 func (ie *InfixExpression) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	out.WriteString("(")
 	out.WriteString(ie.Left.String())
@@ -254,10 +253,10 @@ func (ie *IfExpression) expressionNode() {}
 // TokenLiteral returns the literal value of the token associated with this expression.
 func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
 
-// String returns a string representation of the if expression.
+// String returns a string representation of the `if expression`.
 // Format: "if <condition> <consequence> else <alternative>"
 func (ie *IfExpression) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	out.WriteString("if")
 	out.WriteString(ie.Condition.String())
@@ -286,7 +285,7 @@ func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
 // String returns a string representation of the block statement.
 // It concatenates the string representations of all statements in the block.
 func (bs *BlockStatement) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	for _, s := range bs.Statements {
 		out.WriteString(s.String())
@@ -310,7 +309,7 @@ func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
 // String returns a string representation of the function literal.
 // Format: "fn(<parameters>) <body>"
 func (fl *FunctionLiteral) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	var params []string
 	for _, p := range fl.Parameters {
@@ -342,7 +341,7 @@ func (ce *CallExpression) TokenLiteral() string { return ce.Token.Literal }
 // String returns a string representation of the function call.
 // Format: "<function>(<arguments>)"
 func (ce *CallExpression) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 	var args []string
 
 	for _, a := range ce.Arguments {
@@ -386,7 +385,7 @@ func (al *ArrayLiteral) TokenLiteral() string { return al.Token.Literal }
 // String returns a string representation of the array literal.
 // Format: "[<elements>]"
 func (al *ArrayLiteral) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	var elems []string
 	for _, el := range al.Elements {
@@ -415,7 +414,7 @@ func (ie *IndexExpression) TokenLiteral() string { return ie.Token.Literal }
 // String returns a string representation of the index expression.
 // Format: "(<left-expression>[<index-expression>])"
 func (ie *IndexExpression) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	out.WriteString("(")
 	out.WriteString(ie.Left.String())
@@ -441,7 +440,7 @@ func (hl *HashLiteral) TokenLiteral() string { return hl.Token.Literal }
 // String returns a string representation of the hash literal.
 // Format: "{<key1>:<value1>, <key2>:<value2>, ...}"
 func (hl *HashLiteral) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
 	var pairs []string
 	for key, value := range hl.Pairs {

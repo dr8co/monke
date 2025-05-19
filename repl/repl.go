@@ -106,7 +106,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
+		case tea.KeyCtrlC, tea.KeyEsc, tea.KeyCtrlD:
 			return m, tea.Quit
 		case tea.KeyEnter:
 			input := m.textInput.Value()
@@ -184,7 +184,7 @@ func (m model) View() string {
 	s.WriteString("\n")
 
 	// Help text
-	s.WriteString(historyStyle.Render("\nPress Esc or Ctrl+C to exit"))
+	s.WriteString(historyStyle.Render("\nPress Esc or Ctrl+C/D to exit"))
 
 	return s.String()
 }

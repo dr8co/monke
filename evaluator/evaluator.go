@@ -27,6 +27,15 @@ var (
 	NULL  = &object.Null{}
 )
 
+// Eval evaluates the given AST node in the given environment and returns the result.
+// This is the main entry point for the evaluator and handles all types of AST nodes.
+// It recursively evaluates expressions and statements, maintaining the environment
+// for variable lookups and assignments.
+//
+// For expressions, it returns the resulting value.
+// For statements, it either returns a value (for expression and return statements)
+// or nil (for let statements).
+// If an error occurs during evaluation, it returns an Error object.
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	// Statements

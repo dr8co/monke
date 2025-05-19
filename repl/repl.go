@@ -29,6 +29,10 @@ import (
 
 const PROMPT = ">> "
 
+// Start initializes and runs the REPL with the given username.
+// It creates a new bubbletea program with an initial model and runs it.
+// The username is displayed in the welcome message of the REPL.
+// If an error occurs while running the program, it is printed to the console.
 func Start(username string) {
 	// Start the bubbletea program
 	p := tea.NewProgram(initialModel(username))

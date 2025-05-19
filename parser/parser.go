@@ -64,6 +64,9 @@ type Parser struct {
 	infixParseFns  map[token.TokenType]infixParseFn
 }
 
+// New creates a new Parser with the given lexer.
+// It initializes the parser, registers prefix and infix parsing functions,
+// and reads the first two tokens to set up currentToken and peekToken.
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
 		l:      l,
@@ -118,6 +121,8 @@ func (p *Parser) parseBoolean() ast.Expression {
 	return &ast.Boolean{Token: p.currentToken, Value: p.currentTokenIs(token.TRUE)}
 }
 
+// Errors returns the list of errors encountered during parsing.
+// If the list is empty, parsing was successful.
 func (p *Parser) Errors() []string {
 	return p.errors
 }
@@ -148,6 +153,9 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 }
 
+// ParseProgram parses a complete Monke program and returns its AST representation.
+// It processes tokens until it reaches the end of the input, building a list of statements.
+// Check Errors() after calling this method to see if any parsing errors occurred.
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 	program.Statements = []ast.Statement{}

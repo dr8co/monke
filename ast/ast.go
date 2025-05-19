@@ -135,13 +135,20 @@ func (rs *ReturnStatement) String() string {
 	return out.String()
 }
 
+// ExpressionStatement represents a statement consisting of a single expression.
+// For example, function calls can be used as statements.
 type ExpressionStatement struct {
-	Token      token.Token
-	Expression Expression
+	Token      token.Token // The first token of the expression
+	Expression Expression  // The expression itself
 }
 
-func (exp *ExpressionStatement) statementNode()       {}
+func (exp *ExpressionStatement) statementNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this statement.
 func (exp *ExpressionStatement) TokenLiteral() string { return exp.Token.Literal }
+
+// String returns a string representation of the expression statement.
+// It delegates to the String method of the underlying expression.
 func (exp *ExpressionStatement) String() string {
 	if exp.Expression != nil {
 		return exp.Expression.String()
@@ -149,23 +156,36 @@ func (exp *ExpressionStatement) String() string {
 	return ""
 }
 
+// IntegerLiteral represents an integer literal expression in the AST.
+// For example, the literal "5" in the expression "x + 5".
 type IntegerLiteral struct {
-	Token token.Token
-	Value int64
+	Token token.Token // The token containing the integer literal
+	Value int64       // The actual integer value
 }
 
-func (il *IntegerLiteral) expressionNode()      {}
+func (il *IntegerLiteral) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this integer.
 func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
-func (il *IntegerLiteral) String() string       { return il.Token.Literal }
 
+// String returns a string representation of the integer literal.
+func (il *IntegerLiteral) String() string { return il.Token.Literal }
+
+// PrefixExpression represents a prefix operator expression in the AST.
+// For example, "-5" or "!true" where "-" and "!" are prefix operators.
 type PrefixExpression struct {
-	Token    token.Token
-	Operator string
-	Right    Expression
+	Token    token.Token // The prefix operator token (e.g., "!")
+	Operator string      // The operator (e.g., "!")
+	Right    Expression  // The expression to the right of the operator
 }
 
-func (pe *PrefixExpression) expressionNode()      {}
+func (pe *PrefixExpression) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this expression.
 func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
+
+// String returns a string representation of the prefix expression.
+// Format: "(<operator><expression>)"
 func (pe *PrefixExpression) String() string {
 	var out bytes.Buffer
 
@@ -177,15 +197,22 @@ func (pe *PrefixExpression) String() string {
 	return out.String()
 }
 
+// InfixExpression represents an infix operator expression in the AST.
+// For example, "5 + 5" or "x == y" where "+" and "==" are infix operators.
 type InfixExpression struct {
-	Token    token.Token
-	Left     Expression
-	Operator string
-	Right    Expression
+	Token    token.Token // The operator token (e.g., "+")
+	Left     Expression  // The expression to the left of the operator
+	Operator string      // The operator (e.g., "+")
+	Right    Expression  // The expression to the right of the operator
 }
 
-func (ie *InfixExpression) expressionNode()      {}
+func (ie *InfixExpression) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this expression.
 func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
+
+// String returns a string representation of the infix expression.
+// Format: "(<left-expression> <operator> <right-expression>)"
 func (ie *InfixExpression) String() string {
 	var out bytes.Buffer
 
@@ -198,24 +225,37 @@ func (ie *InfixExpression) String() string {
 	return out.String()
 }
 
+// Boolean represents a boolean literal expression in the AST.
+// For example, "true" or "false".
 type Boolean struct {
-	Token token.Token
-	Value bool
+	Token token.Token // The token containing the boolean literal
+	Value bool        // The actual boolean value
 }
 
-func (b *Boolean) expressionNode()      {}
+func (b *Boolean) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this boolean.
 func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
-func (b *Boolean) String() string       { return b.Token.Literal }
 
+// String returns a string representation of the boolean literal.
+func (b *Boolean) String() string { return b.Token.Literal }
+
+// IfExpression represents an if-else expression in the AST.
+// For example, "if (x > y) { x } else { y }".
 type IfExpression struct {
-	Token       token.Token
-	Condition   Expression
-	Consequence *BlockStatement
-	Alternative *BlockStatement
+	Token       token.Token     // The 'if' token
+	Condition   Expression      // The condition expression
+	Consequence *BlockStatement // The block to execute if condition is true
+	Alternative *BlockStatement // The block to execute if condition is false (optional)
 }
 
-func (ie *IfExpression) expressionNode()      {}
+func (ie *IfExpression) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this expression.
 func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
+
+// String returns a string representation of the if expression.
+// Format: "if <condition> <consequence> else <alternative>"
 func (ie *IfExpression) String() string {
 	var out bytes.Buffer
 
@@ -231,13 +271,20 @@ func (ie *IfExpression) String() string {
 	return out.String()
 }
 
+// BlockStatement represents a block of statements enclosed in braces.
+// For example, "{ statement1; statement2; }".
 type BlockStatement struct {
-	Token      token.Token
-	Statements []Statement
+	Token      token.Token // The '{' token
+	Statements []Statement // The statements within the block
 }
 
-func (bs *BlockStatement) statementNode()       {}
+func (bs *BlockStatement) statementNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this block.
 func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
+
+// String returns a string representation of the block statement.
+// It concatenates the string representations of all statements in the block.
 func (bs *BlockStatement) String() string {
 	var out bytes.Buffer
 
@@ -247,14 +294,21 @@ func (bs *BlockStatement) String() string {
 	return out.String()
 }
 
+// FunctionLiteral represents a function definition in the AST.
+// For example, "fn(x, y) { return x + y; }".
 type FunctionLiteral struct {
-	Token      token.Token
-	Parameters []*Identifier
-	Body       *BlockStatement
+	Token      token.Token     // The 'fn' token
+	Parameters []*Identifier   // The function parameters
+	Body       *BlockStatement // The function body
 }
 
-func (fl *FunctionLiteral) expressionNode()      {}
+func (fl *FunctionLiteral) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this function.
 func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
+
+// String returns a string representation of the function literal.
+// Format: "fn(<parameters>) <body>"
 func (fl *FunctionLiteral) String() string {
 	var out bytes.Buffer
 
@@ -272,14 +326,21 @@ func (fl *FunctionLiteral) String() string {
 	return out.String()
 }
 
+// CallExpression represents a function call in the AST.
+// For example, "add(1, 2)" or "fn(x, y){ x + y }(1, 2)".
 type CallExpression struct {
-	Token     token.Token
-	Function  Expression
-	Arguments []Expression
+	Token     token.Token  // The '(' token
+	Function  Expression   // The function being called (can be an identifier or function literal)
+	Arguments []Expression // The arguments passed to the function
 }
 
-func (ce *CallExpression) expressionNode()      {}
+func (ce *CallExpression) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this call.
 func (ce *CallExpression) TokenLiteral() string { return ce.Token.Literal }
+
+// String returns a string representation of the function call.
+// Format: "<function>(<arguments>)"
 func (ce *CallExpression) String() string {
 	var out bytes.Buffer
 	var args []string
@@ -295,22 +356,35 @@ func (ce *CallExpression) String() string {
 	return out.String()
 }
 
+// StringLiteral represents a string literal expression in the AST.
+// For example, "hello world".
 type StringLiteral struct {
-	Token token.Token
-	Value string
+	Token token.Token // The token containing the string literal
+	Value string      // The actual string value
 }
 
-func (sl *StringLiteral) expressionNode()      {}
+func (sl *StringLiteral) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this string.
 func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
-func (sl *StringLiteral) String() string       { return sl.Token.Literal }
 
+// String returns a string representation of the string literal.
+func (sl *StringLiteral) String() string { return sl.Token.Literal }
+
+// ArrayLiteral represents an array literal expression in the AST.
+// For example, "[1, 2 * 2, 3 + 3]".
 type ArrayLiteral struct {
-	Token    token.Token
-	Elements []Expression
+	Token    token.Token  // The '[' token
+	Elements []Expression // The elements of the array
 }
 
-func (al *ArrayLiteral) expressionNode()      {}
+func (al *ArrayLiteral) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this array.
 func (al *ArrayLiteral) TokenLiteral() string { return al.Token.Literal }
+
+// String returns a string representation of the array literal.
+// Format: "[<elements>]"
 func (al *ArrayLiteral) String() string {
 	var out bytes.Buffer
 
@@ -325,14 +399,21 @@ func (al *ArrayLiteral) String() string {
 	return out.String()
 }
 
+// IndexExpression represents an index expression in the AST.
+// For example, "myArray[1]" or "myHash["key"]".
 type IndexExpression struct {
-	Token token.Token
-	Left  Expression
-	Index Expression
+	Token token.Token // The '[' token
+	Left  Expression  // The expression being indexed (array or hash)
+	Index Expression  // The index expression
 }
 
-func (ie *IndexExpression) expressionNode()      {}
+func (ie *IndexExpression) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this expression.
 func (ie *IndexExpression) TokenLiteral() string { return ie.Token.Literal }
+
+// String returns a string representation of the index expression.
+// Format: "(<left-expression>[<index-expression>])"
 func (ie *IndexExpression) String() string {
 	var out bytes.Buffer
 
@@ -345,13 +426,20 @@ func (ie *IndexExpression) String() string {
 	return out.String()
 }
 
+// HashLiteral represents a hash literal expression in the AST.
+// For example, "{key1: value1, key2: value2}".
 type HashLiteral struct {
-	Token token.Token
-	Pairs map[Expression]Expression
+	Token token.Token               // The '{' token
+	Pairs map[Expression]Expression // The key-value pairs in the hash
 }
 
-func (hl *HashLiteral) expressionNode()      {}
+func (hl *HashLiteral) expressionNode() {}
+
+// TokenLiteral returns the literal value of the token associated with this hash.
 func (hl *HashLiteral) TokenLiteral() string { return hl.Token.Literal }
+
+// String returns a string representation of the hash literal.
+// Format: "{<key1>:<value1>, <key2>:<value2>, ...}"
 func (hl *HashLiteral) String() string {
 	var out bytes.Buffer
 

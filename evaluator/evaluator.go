@@ -5,11 +5,11 @@
 // recursively traverses the AST and executes the corresponding operations.
 //
 // Key features:
-// - Evaluation of all language constructs (expressions, statements, literals, etc.)
-// - Support for variables and environments
-// - Function calls and closures
-// - Error handling and reporting
-// - Built-in functions
+//   - Evaluation of all language constructs (expressions, statements, literals, etc.)
+//   - Support for variables and environments
+//   - Function calls and closures
+//   - Error handling and reporting
+//   - Built-in functions
 //
 // The main entry point is the Eval function, which takes an AST node and an
 // environment and returns an object representing the result of the evaluation.

@@ -6,10 +6,10 @@
 // interface with features like syntax highlighting and command history.
 //
 // Key features:
-// - Interactive command input and execution
-// - Command history tracking
-// - Styled output with different colors for results and errors
-// - Persistent environment across commands
+//   - Interactive command input and execution
+//   - Command history tracking
+//   - Styled output with different colors for results and errors
+//   - Persistent environment across commands
 //
 // The main entry point is the Start function, which initializes and runs the REPL
 // with the given username.

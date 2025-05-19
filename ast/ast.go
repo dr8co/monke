@@ -5,10 +5,10 @@
 // statements, and literals. The AST is used by the evaluator to execute the program.
 //
 // Key components:
-// - Node: The base interface for all AST nodes
-// - Statement: Interface for nodes that represent statements (e.g., let, return)
-// - Expression: Interface for nodes that represent expressions (e.g., literals, function calls)
-// - Program: The root node of the AST, containing a list of statements
+//   - Node: The base interface for all AST nodes
+//   - Statement: Interface for nodes that represent statements (e.g., let, return)
+//   - Expression: Interface for nodes that represent expressions (e.g., literals, function calls)
+//   - Program: The root node of the AST, containing a list of statements
 package ast
 
 import (

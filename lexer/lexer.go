@@ -6,10 +6,10 @@
 // by the parser.
 //
 // Key features:
-// - Tokenization of all language elements (keywords, identifiers, literals, operators, etc.)
-// - Handling of whitespace and comments
-// - Error detection for illegal characters
-// - Support for various token types defined in the token package
+//   - Tokenization of all language elements (keywords, identifiers, literals, operators, etc.)
+//   - Handling of whitespace and comments
+//   - Error detection for illegal characters
+//   - Support for various token types defined in the token package
 //
 // The main entry point is the New function, which creates a new Lexer instance,
 // and the NextToken method, which returns the next token from the input.

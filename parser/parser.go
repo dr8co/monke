@@ -5,10 +5,10 @@
 // a recursive descent parser with Pratt parsing (precedence climbing) for expressions.
 //
 // Key features:
-// - Top-down parsing of statements and expressions
-// - Precedence-based expression parsing
-// - Error reporting for syntax errors
-// - Support for all language constructs (statements, expressions, literals, etc.)
+//   - Top-down parsing of statements and expressions
+//   - Precedence-based expression parsing
+//   - Error reporting for syntax errors
+//   - Support for all language constructs (statements, expressions, literals, etc.)
 //
 // The main entry point is the New function, which creates a new Parser instance,
 // and the ParseProgram method, which parses a complete Monke program and returns

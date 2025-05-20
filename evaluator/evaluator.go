@@ -404,7 +404,8 @@ func evalStringInfixExpression(operator string, left, right object.Object) objec
 }
 
 func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Object {
-	pairs := make(map[object.HashKey]object.HashPair)
+	// Pre-allocate the map with the expected size to avoid resizing
+	pairs := make(map[object.HashKey]object.HashPair, len(node.Pairs))
 
 	for keyNode, valueNode := range node.Pairs {
 		key := Eval(keyNode, env)

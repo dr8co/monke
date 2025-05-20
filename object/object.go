@@ -8,7 +8,8 @@
 //   - Object interface: The base interface for all runtime values
 //   - Various object types (Integer, Boolean, String, Array, Hash, Function, etc.)
 //   - Environment: Stores variable bindings during execution
-//   - Hashable interface: For objects that can be used as hash keys.
+//   - Hashable interface: For objects that can be used as hash keys
+//   - Optimized hash table implementation with key caching for better performance
 //
 // The evaluator uses the object system to represent and manipulate values
 // during program execution.
@@ -57,6 +58,8 @@ func (b *Boolean) Inspect() string  { return fmt.Sprintf("%t", b.Value) }
 
 type String struct {
 	Value string
+	// Cache for the hash key to avoid recalculating it
+	hashKey *HashKey
 }
 
 func (s *String) Type() ObjectType { return STRING_OBJ }
@@ -156,13 +159,22 @@ func (i *Integer) HashKey() HashKey {
 }
 
 func (s *String) HashKey() HashKey {
+	// Return the cached hash key if available
+	if s.hashKey != nil {
+		return *s.hashKey
+	}
+
+	// Calculate the hash key
 	h := fnv.New64a()
 	_, err := h.Write([]byte(s.Value))
 	if err != nil {
-		panic(err)
+		return HashKey{Type: ERROR_OBJ, Value: 0}
 	}
 
-	return HashKey{Type: s.Type(), Value: h.Sum64()}
+	// Create and cache the hash key
+	hashKey := HashKey{Type: s.Type(), Value: h.Sum64()}
+	s.hashKey = &hashKey
+	return hashKey
 }
 
 type HashPair struct {

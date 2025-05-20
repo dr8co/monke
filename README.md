@@ -52,6 +52,7 @@ You should see a prompt where you can enter Monke code interactively.
 ## Project Structure
 
 - `main.go` — Entry point, starts the REPL.
+- `cmd/profile/` — Profiling tool for performance analysis.
 - `lexer/` — Lexical analyzer (tokenizer).
 - `parser/` — Parser for Monke language.
 - `ast/` — Abstract Syntax Tree definitions.
@@ -79,6 +80,19 @@ To run the tests:
 ```sh
 go test ./...
 ```
+
+## Profiling
+
+Monke includes a profiling tool to analyze performance:
+
+```sh
+# Build and run the profiling tool
+cd cmd/profile
+go build
+./profile
+```
+
+For more details on profiling options and available test programs, see the [profiling tool README](cmd/profile/README.md).
 
 ## Contributing
 

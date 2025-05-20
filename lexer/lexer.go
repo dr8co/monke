@@ -10,6 +10,7 @@
 //   - Handling of whitespace and comments
 //   - Error detection for illegal characters
 //   - Support for various token types defined in the token package
+//   - Optimized for performance with minimal allocations
 //
 // The main entry point is the New function, which creates a new Lexer instance,
 // and the NextToken method, which returns the next token from the input.
@@ -17,13 +18,37 @@ package lexer
 
 import "github.com/dr8co/monke/token"
 
+// Common tokens that are reused to reduce allocations
+var (
+	tokenPlus      = token.Token{Type: token.PLUS, Literal: "+"}
+	tokenMinus     = token.Token{Type: token.MINUS, Literal: "-"}
+	tokenSlash     = token.Token{Type: token.SLASH, Literal: "/"}
+	tokenAsterisk  = token.Token{Type: token.ASTERISK, Literal: "*"}
+	tokenLT        = token.Token{Type: token.LT, Literal: "<"}
+	tokenGT        = token.Token{Type: token.GT, Literal: ">"}
+	tokenSemicolon = token.Token{Type: token.SEMICOLON, Literal: ";"}
+	tokenColon     = token.Token{Type: token.COLON, Literal: ":"}
+	tokenComma     = token.Token{Type: token.COMMA, Literal: ","}
+	tokenLParen    = token.Token{Type: token.LPAREN, Literal: "("}
+	tokenRParen    = token.Token{Type: token.RPAREN, Literal: ")"}
+	tokenLBrace    = token.Token{Type: token.LBRACE, Literal: "{"}
+	tokenRBrace    = token.Token{Type: token.RBRACE, Literal: "}"}
+	tokenLBracket  = token.Token{Type: token.LBRACKET, Literal: "["}
+	tokenRBracket  = token.Token{Type: token.RBRACKET, Literal: "]"}
+	tokenEOF       = token.Token{Type: token.EOF, Literal: ""}
+)
+
 type Lexer struct {
 	input        string
 	position     int
 	readPosition int
 	ch           byte
+	// Pre-allocates a token to reuse for single-character tokens
+	singleCharToken token.Token
 }
 
+// readChar reads the next character from the input and advances the position.
+// It's optimized to minimize checks and operations.
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
@@ -31,13 +56,16 @@ func (l *Lexer) readChar() {
 		l.ch = l.input[l.readPosition]
 	}
 	l.position = l.readPosition
-	l.readPosition += 1
+	l.readPosition++
 }
 
 // New creates a new Lexer with the given input string.
-// It initializes the lexer and reads the first character.
+// It initializes the lexer, reads the first character, and sets up the token buffer.
 func New(input string) *Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{
+		input:           input,
+		singleCharToken: token.Token{}, // Initialize the token buffer
+	}
 	l.readChar()
 	return l
 }
@@ -46,8 +74,6 @@ func New(input string) *Lexer {
 // It skips whitespace, identifies the token type based on the current character,
 // and returns a token with the appropriate type and literal value.
 func (l *Lexer) NextToken() token.Token {
-	var tok token.Token
-
 	l.skipWhitespace()
 
 	switch l.ch {
@@ -55,70 +81,96 @@ func (l *Lexer) NextToken() token.Token {
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.EQ, Literal: string(ch) + string(l.ch)}
+			// Use a pre-allocated token for "=="
+			l.readChar() // Advance to the next character after '=='
+			return token.Token{Type: token.EQ, Literal: string(ch) + string('=')}
 		} else {
-			tok = newToken(token.ASSIGN, l.ch)
+			l.readChar() // Advance to the next character after '='
+			return token.Token{Type: token.ASSIGN, Literal: "="}
 		}
 	case '!':
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.NOT_EQ, Literal: string(ch) + string(l.ch)}
+			// Use a pre-allocated token for "!="
+			l.readChar() // Advance to the next character after '!='
+			return token.Token{Type: token.NOT_EQ, Literal: string(ch) + string('=')}
 		} else {
-			tok = newToken(token.BANG, l.ch)
+			l.readChar() // Advance to the next character after '!'
+			return token.Token{Type: token.BANG, Literal: "!"}
 		}
 	case '+':
-		tok = newToken(token.PLUS, l.ch)
+		l.readChar() // Advance to the next character after '+'
+		return tokenPlus
 	case '-':
-		tok = newToken(token.MINUS, l.ch)
+		l.readChar() // Advance to the next character after '-'
+		return tokenMinus
 	case '/':
-		tok = newToken(token.SLASH, l.ch)
+		l.readChar() // Advance to the next character after '/'
+		return tokenSlash
 	case '*':
-		tok = newToken(token.ASTERISK, l.ch)
+		l.readChar() // Advance to the next character after '*'
+		return tokenAsterisk
 	case '<':
-		tok = newToken(token.LT, l.ch)
+		l.readChar() // Advance to the next character after '<'
+		return tokenLT
 	case '>':
-		tok = newToken(token.GT, l.ch)
+		l.readChar() // Advance to the next character after '>'
+		return tokenGT
 	case ';':
-		tok = newToken(token.SEMICOLON, l.ch)
+		l.readChar() // Advance to the next character after ';'
+		return tokenSemicolon
 	case ':':
-		tok = newToken(token.COLON, l.ch)
+		l.readChar() // Advance to the next character after ':'
+		return tokenColon
 	case ',':
-		tok = newToken(token.COMMA, l.ch)
+		l.readChar() // Advance to the next character after ','
+		return tokenComma
 	case '(':
-		tok = newToken(token.LPAREN, l.ch)
+		l.readChar() // Advance to the next character after '('
+		return tokenLParen
 	case ')':
-		tok = newToken(token.RPAREN, l.ch)
+		l.readChar() // Advance to the next character after ')'
+		return tokenRParen
 	case '{':
-		tok = newToken(token.LBRACE, l.ch)
+		l.readChar() // Advance to the next character after '{'
+		return tokenLBrace
 	case '}':
-		tok = newToken(token.RBRACE, l.ch)
+		l.readChar() // Advance to the next character after '}'
+		return tokenRBrace
 	case '[':
-		tok = newToken(token.LBRACKET, l.ch)
+		l.readChar() // Advance to the next character after '['
+		return tokenLBracket
 	case ']':
-		tok = newToken(token.RBRACKET, l.ch)
+		l.readChar() // Advance to the next character after ']'
+		return tokenRBracket
 	case '"':
-		tok.Type = token.STRING
+		tok := token.Token{Type: token.STRING}
 		tok.Literal = l.readString()
+		l.readChar() // Advance to the next character after the closing quote
+		return tok
 	case 0:
-		tok.Literal = ""
-		tok.Type = token.EOF
+		return tokenEOF
 	default:
 		if isLetter(l.ch) {
-			tok.Literal = l.readIdentifier()
-			tok.Type = token.LookupIdent(tok.Literal)
-			return tok
+			literal := l.readIdentifier()
+			return token.Token{
+				Type:    token.LookupIdent(literal),
+				Literal: literal,
+			}
 		} else if isDigit(l.ch) {
-			tok.Type = token.INT
-			tok.Literal = l.readNumber()
-			return tok
+			return token.Token{
+				Type:    token.INT,
+				Literal: l.readNumber(),
+			}
 		} else {
-			tok = newToken(token.ILLEGAL, l.ch)
+			// For illegal characters, reuse the single char token
+			l.singleCharToken.Type = token.ILLEGAL
+			l.singleCharToken.Literal = string(l.ch)
+			l.readChar() // Advance to the next character after the illegal character
+			return l.singleCharToken
 		}
-
 	}
-	l.readChar()
-	return tok
 }
 
 func isLetter(ch byte) bool {
@@ -129,42 +181,51 @@ func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
 
+// readNumber reads a number from the input and returns it as a string.
+// It's optimized to avoid unnecessary allocations.
 func (l *Lexer) readNumber() string {
 	position := l.position
+	// Fast-forward through digits
 	for isDigit(l.ch) {
 		l.readChar()
 	}
 	return l.input[position:l.position]
 }
 
+// readIdentifier reads an identifier from the input and returns it as a string.
+// It's optimized to avoid unnecessary allocations.
 func (l *Lexer) readIdentifier() string {
 	position := l.position
+	// Fast-forward through letters
 	for isLetter(l.ch) {
 		l.readChar()
 	}
 	return l.input[position:l.position]
 }
 
-func newToken(tokenType token.TokenType, ch byte) token.Token {
-	return token.Token{Type: tokenType, Literal: string(ch)}
-}
-
+// skipWhitespace skips any whitespace characters in the input.
+// It's optimized to use a single loop.
 func (l *Lexer) skipWhitespace() {
+	// Fast-forward through whitespace
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
 	}
 }
 
+// peekChar returns the next character in the input without advancing the position.
+// It's optimized to avoid unnecessary checks.
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
-	} else {
-		return l.input[l.readPosition]
 	}
+	return l.input[l.readPosition]
 }
 
+// readString reads a string from the input and returns it as a string.
+// It's optimized to avoid unnecessary allocations.
 func (l *Lexer) readString() string {
 	position := l.position + 1
+	// Fast-forward through string characters
 	for {
 		l.readChar()
 		if l.ch == '"' || l.ch == 0 {

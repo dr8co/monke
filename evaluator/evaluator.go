@@ -10,6 +10,9 @@
 //   - Function calls and closures
 //   - Error handling and reporting
 //   - Built-in functions
+//   - Optimized for performance with minimal memory allocations
+//   - Object caching for common values (integers, strings, booleans)
+//   - Pre-allocation of collections to reduce reallocations
 //
 // The main entry point is the Eval function, which takes an AST node and an
 // environment and returns an object representing the result of the evaluation.
@@ -25,7 +28,18 @@ var (
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
 	NULL  = &object.Null{}
+
+	// Cache for small integer values to reduce allocations
+	// This range covers most common integer values used in programs
+	integerCache = make(map[int64]*object.Integer, 256)
 )
+
+// init initializes the integer cache with values from -128 to 127
+func init() {
+	for i := int64(-128); i <= 127; i++ {
+		integerCache[i] = &object.Integer{Value: i}
+	}
+}
 
 // Eval evaluates the given AST node in the given environment and returns the result.
 // This is the main entry point for the evaluator and handles all types of AST nodes.
@@ -64,13 +78,17 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	// Expressions
 	case *ast.IntegerLiteral:
+		// Use cached integer if available
+		if val, ok := integerCache[node.Value]; ok {
+			return val
+		}
 		return &object.Integer{Value: node.Value}
 
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
 
 	case *ast.StringLiteral:
-		return &object.String{Value: node.Value}
+		return getStringObject(node.Value)
 
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
@@ -193,7 +211,8 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 }
 
 func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
-	var result []object.Object
+	// Pre-allocate the result slice to avoid reallocations
+	result := make([]object.Object, 0, len(exps))
 
 	for _, e := range exps {
 		evaluated := Eval(e, env)
@@ -310,19 +329,27 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	}
 }
 
+// getIntegerObject returns an integer object from the cache if available, or creates a new one
+func getIntegerObject(value int64) *object.Integer {
+	if val, ok := integerCache[value]; ok {
+		return val
+	}
+	return &object.Integer{Value: value}
+}
+
 func evalIntegerInfixExpression(operator string, left, right object.Object) object.Object {
 	leftVal := left.(*object.Integer).Value
 	rightVal := right.(*object.Integer).Value
 
 	switch operator {
 	case "+":
-		return &object.Integer{Value: leftVal + rightVal}
+		return getIntegerObject(leftVal + rightVal)
 	case "-":
-		return &object.Integer{Value: leftVal - rightVal}
+		return getIntegerObject(leftVal - rightVal)
 	case "*":
-		return &object.Integer{Value: leftVal * rightVal}
+		return getIntegerObject(leftVal * rightVal)
 	case "/":
-		return &object.Integer{Value: leftVal / rightVal}
+		return getIntegerObject(leftVal / rightVal)
 	case "<":
 		return nativeBoolToBooleanObject(leftVal < rightVal)
 	case ">":
@@ -353,7 +380,7 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 		return newError("unknown operator: -%s", right.Type())
 	}
 	value := right.(*object.Integer).Value
-	return &object.Integer{Value: -value}
+	return getIntegerObject(-value)
 }
 
 func evalBangOperatorExpression(right object.Object) object.Object {
@@ -392,6 +419,25 @@ func nativeBoolToBooleanObject(b bool) *object.Boolean {
 	return FALSE
 }
 
+// stringCache is a map to cache frequently used strings
+var stringCache = make(map[string]*object.String, 100)
+
+// getStringObject returns a string object from the cache if available, or creates a new one
+func getStringObject(value string) *object.String {
+	if val, ok := stringCache[value]; ok {
+		return val
+	}
+
+	// Only cache strings up to a certain length to avoid memory bloat
+	if len(value) <= 64 {
+		str := &object.String{Value: value}
+		stringCache[value] = str
+		return str
+	}
+
+	return &object.String{Value: value}
+}
+
 func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
 	if operator != "+" {
 		return newError("unknown operator: %s %s %s",
@@ -400,7 +446,7 @@ func evalStringInfixExpression(operator string, left, right object.Object) objec
 	leftVal := left.(*object.String).Value
 	rightVal := right.(*object.String).Value
 
-	return &object.String{Value: leftVal + rightVal}
+	return getStringObject(leftVal + rightVal)
 }
 
 func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Object {

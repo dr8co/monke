@@ -8,7 +8,6 @@ import (
 	"github.com/dr8co/monke/object"
 	"github.com/dr8co/monke/parser"
 	"github.com/dr8co/monke/repl"
-	"io/ioutil"
 	"os"
 	"os/user"
 )
@@ -59,7 +58,7 @@ func main() {
 
 	// Evaluate an expression if specified
 	if *evalFlag != "" {
-		evaluateExpression(*evalFlag, *debugFlag)
+		evaluateExpression(*evalFlag)
 		return
 	}
 
@@ -70,7 +69,7 @@ func main() {
 // executeFile reads and executes a Monkey script file
 func executeFile(filename string, debug bool) {
 	// Read the file
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("Error reading file: %s\n", err)
 		os.Exit(1)
@@ -98,7 +97,7 @@ func executeFile(filename string, debug bool) {
 }
 
 // evaluateExpression evaluates a single Monkey expression
-func evaluateExpression(expr string, debug bool) {
+func evaluateExpression(expr string) {
 	// Create environment
 	env := object.NewEnvironment()
 

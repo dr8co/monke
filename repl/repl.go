@@ -31,7 +31,10 @@ import (
 	"github.com/dr8co/monke/token"
 )
 
-const PROMPT = ">> "
+const (
+	PROMPT      = ">> "
+	CONT_PROMPT = ".. "
+)
 
 // Options contains configuration options for the REPL
 type Options struct {
@@ -124,14 +127,16 @@ type evalResultMsg struct {
 
 // The model represents the state of the application
 type model struct {
-	textInput    textinput.Model
-	history      []historyEntry
-	env          *object.Environment
-	username     string
-	evaluating   bool
-	currentInput string
-	spinner      spinner.Model
-	options      Options
+	textInput       textinput.Model
+	history         []historyEntry
+	env             *object.Environment
+	username        string
+	evaluating      bool
+	currentInput    string
+	multilineBuffer string // Buffer for multiline input
+	isMultiline     bool   // Flag to indicate if we're in multiline mode
+	spinner         spinner.Model
+	options         Options
 }
 
 // historyEntry represents a single entry in the REPL history
@@ -156,19 +161,50 @@ func initialModel(username string, options Options) model {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF79C6"))
 
 	return model{
-		textInput:  ti,
-		history:    []historyEntry{},
-		env:        object.NewEnvironment(),
-		username:   username,
-		evaluating: false,
-		spinner:    s,
-		options:    options,
+		textInput:       ti,
+		history:         []historyEntry{},
+		env:             object.NewEnvironment(),
+		username:        username,
+		evaluating:      false,
+		multilineBuffer: "",
+		isMultiline:     false,
+		spinner:         s,
+		options:         options,
 	}
 }
 
 // Init is the first function that will be called
 func (m model) Init() tea.Cmd {
 	return tea.Batch(textinput.Blink, m.spinner.Tick)
+}
+
+// isBalanced checks if brackets, braces, and parentheses are balanced in the input
+func isBalanced(input string) bool {
+	var stack []rune
+
+	for _, char := range input {
+		switch char {
+		case '(', '{', '[':
+			stack = append(stack, char)
+		case ')':
+			if len(stack) == 0 || stack[len(stack)-1] != '(' {
+				return false
+			}
+			stack = stack[:len(stack)-1]
+		case '}':
+			if len(stack) == 0 || stack[len(stack)-1] != '{' {
+				return false
+			}
+			stack = stack[:len(stack)-1]
+		case ']':
+			if len(stack) == 0 || stack[len(stack)-1] != '[' {
+				return false
+			}
+			stack = stack[:len(stack)-1]
+		}
+	}
+
+	return len(stack) == 0
 }
 
 // evalCmd is a command that evaluates Monkey code asynchronously
@@ -323,6 +359,56 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			input := m.textInput.Value()
 			if input == "" {
+				// If we're in multiline mode and the user enters an empty line, evaluate the buffer
+				if m.isMultiline {
+					if m.multilineBuffer == "" {
+						m.isMultiline = false
+						return m, nil
+					}
+
+					// Start evaluation in the background
+					m.evaluating = true
+					m.currentInput = m.multilineBuffer
+					m.textInput.SetValue("")
+					m.isMultiline = false
+
+					// Reset the buffer after evaluation
+					buffer := m.multilineBuffer
+					m.multilineBuffer = ""
+
+					return m, evalCmd(buffer, m.env, m.options.Debug)
+				}
+				return m, nil
+			}
+
+			// If we're in multiline mode, append the input to the buffer
+			if m.isMultiline {
+				m.multilineBuffer += "\n" + input
+				m.textInput.SetValue("")
+
+				// Check if brackets are now balanced
+				if isBalanced(m.multilineBuffer) {
+					// Start evaluation in the background
+					m.evaluating = true
+					m.currentInput = m.multilineBuffer
+					m.isMultiline = false
+
+					// Reset the buffer after evaluation
+					buffer := m.multilineBuffer
+					m.multilineBuffer = ""
+
+					return m, evalCmd(buffer, m.env, m.options.Debug)
+				}
+
+				return m, nil
+			}
+
+			// Check if the input has balanced brackets
+			if !isBalanced(input) {
+				// Enter multiline mode
+				m.isMultiline = true
+				m.multilineBuffer = input
+				m.textInput.SetValue("")
 				return m, nil
 			}
 
@@ -364,9 +450,17 @@ func (m model) View() string {
 
 	// History
 	for _, entry := range m.history {
-		s.WriteString(promptStyle.Render(PROMPT))
-		s.WriteString(m.highlightCode(entry.input))
-		s.WriteString("\n")
+		// Handle multiline input in history
+		lines := strings.Split(entry.input, "\n")
+		for i, line := range lines {
+			if i == 0 {
+				s.WriteString(promptStyle.Render(PROMPT))
+			} else {
+				s.WriteString(promptStyle.Render(CONT_PROMPT))
+			}
+			s.WriteString(m.highlightCode(line))
+			s.WriteString("\n")
+		}
 
 		if entry.isError {
 			// Use different styles based on the error type
@@ -417,14 +511,43 @@ func (m model) View() string {
 		s.WriteString("\n\n")
 	}
 
+	// Show multiline buffer if in multiline mode
+	if m.isMultiline && !m.evaluating {
+		s.WriteString(historyStyle.Render("Current multiline input:\n"))
+		// Split the buffer by lines and display each line with appropriate prompt
+		lines := strings.Split(m.multilineBuffer, "\n")
+		for i, line := range lines {
+			if i == 0 {
+				s.WriteString(promptStyle.Render(PROMPT))
+			} else {
+				s.WriteString(promptStyle.Render(CONT_PROMPT))
+			}
+			s.WriteString(m.highlightCode(line))
+			s.WriteString("\n")
+		}
+		s.WriteString("\n")
+	}
+
 	// Input
 	if !m.evaluating {
+		// Set the appropriate prompt based on whether we're in multiline mode
+		if m.isMultiline {
+			m.textInput.Prompt = promptStyle.Render(CONT_PROMPT)
+		} else {
+			m.textInput.Prompt = promptStyle.Render(PROMPT)
+		}
 		s.WriteString(m.textInput.View())
 		s.WriteString("\n")
 	}
 
 	// Help text
-	s.WriteString(historyStyle.Render("\nPress Esc or Ctrl+C/D to exit"))
+	helpText := "\nPress Esc or Ctrl+C/D to exit"
+	if m.isMultiline {
+		helpText += " | Multiline mode: Enter empty line to evaluate or continue typing"
+	} else {
+		helpText += " | Multiline input supported for unbalanced brackets"
+	}
+	s.WriteString(historyStyle.Render(helpText))
 
 	return s.String()
 }

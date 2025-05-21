@@ -17,6 +17,9 @@ package repl
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -26,8 +29,6 @@ import (
 	"github.com/dr8co/monke/object"
 	"github.com/dr8co/monke/parser"
 	"github.com/dr8co/monke/token"
-	"strings"
-	"time"
 )
 
 const PROMPT = ">> "
@@ -167,7 +168,7 @@ func initialModel(username string, options Options) model {
 
 // Init is the first function that will be called
 func (m model) Init() tea.Cmd {
-	return tea.Batch(textinput.Blink, spinner.Tick)
+	return tea.Batch(textinput.Blink, m.spinner.Tick)
 }
 
 // evalCmd is a command that evaluates Monkey code asynchronously
@@ -313,7 +314,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		// If we're evaluating, ignore key presses except for Ctrl+C
 		if m.evaluating && msg.Type != tea.KeyCtrlC {
-			return m, nil
+			return m, m.spinner.Tick
 		}
 
 		switch msg.Type {
@@ -337,6 +338,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Only update the text input if we're not evaluating
 	if !m.evaluating {
 		m.textInput, cmd = m.textInput.Update(msg)
+	}
+
+	// Ensure the spinner keeps ticking while evaluating
+	if m.evaluating {
+		return m, m.spinner.Tick
 	}
 
 	return m, cmd
@@ -491,13 +497,13 @@ func (m model) highlightCode(code string) string {
 		}
 	}
 
-	// Simple approach: just highlight each token
+	// Simple approach: highlight each token
 	for _, tok := range tokens {
 		if tok.Type == token.EOF {
 			continue
 		}
 
-		// Apply the appropriate style based on token type
+		// Apply the appropriate style based on the token type
 		switch tok.Type {
 		case token.FUNCTION, token.LET, token.TRUE, token.FALSE, token.IF, token.ELSE, token.RETURN:
 			s.WriteString(keywordStyle.Render(tok.Literal))

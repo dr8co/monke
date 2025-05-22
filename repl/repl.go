@@ -514,17 +514,8 @@ func (m model) View() string {
 	// Show multiline buffer if in multiline mode
 	if m.isMultiline && !m.evaluating {
 		s.WriteString(historyStyle.Render("Current multiline input:\n"))
-		// Split the buffer by lines and display each line with appropriate prompt
-		lines := strings.Split(m.multilineBuffer, "\n")
-		for i, line := range lines {
-			if i == 0 {
-				s.WriteString(promptStyle.Render(PROMPT))
-			} else {
-				s.WriteString(promptStyle.Render(CONT_PROMPT))
-			}
-			s.WriteString(m.highlightCode(line))
-			s.WriteString("\n")
-		}
+		// Instead of splitting by lines, highlight the entire buffer for proper indentation
+		s.WriteString(m.highlightCode(m.multilineBuffer))
 		s.WriteString("\n")
 	}
 
@@ -602,7 +593,6 @@ func formatRuntimeError(errorMsg string) string {
 
 // highlightCode applies syntax highlighting to Monkey code
 func (m model) highlightCode(code string) string {
-	// If NoColor option is enabled, return the code without highlighting
 	if m.options.NoColor {
 		return code
 	}
@@ -610,7 +600,6 @@ func (m model) highlightCode(code string) string {
 	l := lexer.New(code)
 	var s strings.Builder
 
-	// Collect all tokens first
 	var tokens []token.Token
 	for {
 		tok := l.NextToken()
@@ -620,7 +609,6 @@ func (m model) highlightCode(code string) string {
 		}
 	}
 
-	// Helper functions
 	isKeyword := func(t token.Token) bool {
 		switch t.Type {
 		case token.FUNCTION, token.LET, token.TRUE, token.FALSE, token.IF, token.ELSE, token.RETURN:
@@ -636,9 +624,9 @@ func (m model) highlightCode(code string) string {
 		}
 		return false
 	}
-	//isIdentifier := func(t token.Token) bool {
-	//	return t.Type == token.IDENT
-	//}
+	isIdentifier := func(t token.Token) bool {
+		return t.Type == token.IDENT
+	}
 	isOpenParen := func(t token.Token) bool {
 		return t.Type == token.LPAREN
 	}
@@ -660,7 +648,8 @@ func (m model) highlightCode(code string) string {
 		return false
 	}
 
-	// Formatting-aware token loop
+	indentLevel := 0
+	atLineStart := true
 	for i := range len(tokens) - 1 {
 		tok := tokens[i]
 		if tok.Type == token.EOF {
@@ -672,52 +661,46 @@ func (m model) highlightCode(code string) string {
 		}
 		next := tokens[i+1]
 
-		// --- Formatting rules ---
-		// 1. Space after 'let', 'fn', 'if', 'else', 'return' (if not delimiter)
+		// Insert indentation at the start of a new line
+		if atLineStart {
+			for range indentLevel {
+				s.WriteString("  ")
+			}
+			atLineStart = false
+		}
+
+		// Formatting rules (same as before)
 		if isKeyword(tok) && tok.Type != token.TRUE && tok.Type != token.FALSE {
 			switch tok.Type {
 			case token.LET, token.FUNCTION, token.RETURN, token.IF, token.ELSE:
-				// Style and print keyword
 				s.WriteString(keywordStyle.Render(tok.Literal))
-				// Only add space if next is not a delimiter or open brace/paren
 				if !isDelimiter(next) && !isOpenBrace(next) && !isOpenParen(next) {
 					s.WriteString(" ")
 				}
 				continue
 			}
 		}
-
-		// 2. Space before opening paren for 'if', 'else', 'fn' (declaration)
 		if isKeyword(prev) && (prev.Type == token.IF || prev.Type == token.ELSE || prev.Type == token.FUNCTION) && isOpenParen(tok) {
 			s.WriteString(" ")
 		}
-
-		// 3. No space before opening paren for function call (identifier before paren)
-
-		// 4. Space before opening brace (if previous is not open paren or operator)
+		if isIdentifier(prev) && isOpenParen(tok) {
+			// no space
+		}
 		if isOpenBrace(tok) && !(isOpenParen(prev) || isOperator(prev)) {
 			s.WriteString(" ")
 		}
-
-		// 5. No space before closing brace
-		// (do nothing, just print)
-
-		// 6. Space around infix operators
 		if isOperator(tok) {
-			// Add space before if not at the start
 			if i > 0 && !isDelimiter(prev) {
 				s.WriteString(" ")
 			}
-			// Style operator
 			s.WriteString(operatorStyle.Render(tok.Literal))
-			// Add space after if next is not delimiter or close paren/brace
 			if !isDelimiter(next) && !isCloseParen(next) && !isCloseBrace(next) {
 				s.WriteString(" ")
 			}
 			continue
 		}
 
-		// --- Syntax highlighting ---
+		// Syntax highlighting
 		switch tok.Type {
 		case token.FUNCTION, token.LET, token.TRUE, token.FALSE, token.IF, token.ELSE, token.RETURN:
 			s.WriteString(keywordStyle.Render(tok.Literal))
@@ -735,6 +718,32 @@ func (m model) highlightCode(code string) string {
 			s.WriteString(delimiterStyle.Render(tok.Literal))
 		default:
 			s.WriteString(tok.Literal)
+		}
+
+		// Handle newlines and indentation
+		if tok.Type == token.SEMICOLON || tok.Type == token.RBRACE {
+			// Print a newline after semicolon or closing brace if next is not EOF
+			if next.Type != token.EOF {
+				s.WriteString("\n")
+				atLineStart = true
+			}
+		}
+		if tok.Type == token.LBRACE {
+			// Print a newline after opening brace if next is not closing brace or EOF
+			if next.Type != token.RBRACE && next.Type != token.EOF {
+				s.WriteString("\n")
+				atLineStart = true
+			}
+			indentLevel++
+		}
+		if tok.Type == token.RBRACE {
+			if indentLevel > 0 {
+				indentLevel--
+			}
+		}
+		if tok.Type == token.SEMICOLON && next.Type == token.RBRACE {
+			// Don't add an extra newline if the next token is a closing brace
+			atLineStart = false
 		}
 	}
 

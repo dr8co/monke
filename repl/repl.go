@@ -620,13 +620,104 @@ func (m model) highlightCode(code string) string {
 		}
 	}
 
-	// Simple approach: highlight each token
-	for _, tok := range tokens {
+	// Helper functions
+	isKeyword := func(t token.Token) bool {
+		switch t.Type {
+		case token.FUNCTION, token.LET, token.TRUE, token.FALSE, token.IF, token.ELSE, token.RETURN:
+			return true
+		}
+		return false
+	}
+	isOperator := func(t token.Token) bool {
+		switch t.Type {
+		case token.ASSIGN, token.PLUS, token.MINUS, token.BANG, token.ASTERISK, token.SLASH,
+			token.LT, token.GT, token.EQ, token.NOT_EQ:
+			return true
+		}
+		return false
+	}
+	//isIdentifier := func(t token.Token) bool {
+	//	return t.Type == token.IDENT
+	//}
+	isOpenParen := func(t token.Token) bool {
+		return t.Type == token.LPAREN
+	}
+	isCloseParen := func(t token.Token) bool {
+		return t.Type == token.RPAREN
+	}
+	isOpenBrace := func(t token.Token) bool {
+		return t.Type == token.LBRACE
+	}
+	isCloseBrace := func(t token.Token) bool {
+		return t.Type == token.RBRACE
+	}
+	isDelimiter := func(t token.Token) bool {
+		switch t.Type {
+		case token.COMMA, token.COLON, token.SEMICOLON, token.LPAREN, token.RPAREN,
+			token.LBRACE, token.RBRACE, token.LBRACKET, token.RBRACKET:
+			return true
+		}
+		return false
+	}
+
+	// Formatting-aware token loop
+	for i := range len(tokens) - 1 {
+		tok := tokens[i]
 		if tok.Type == token.EOF {
 			continue
 		}
+		var prev token.Token
+		if i > 0 {
+			prev = tokens[i-1]
+		}
+		next := tokens[i+1]
 
-		// Apply the appropriate style based on the token type
+		// --- Formatting rules ---
+		// 1. Space after 'let', 'fn', 'if', 'else', 'return' (if not delimiter)
+		if isKeyword(tok) && tok.Type != token.TRUE && tok.Type != token.FALSE {
+			switch tok.Type {
+			case token.LET, token.FUNCTION, token.RETURN, token.IF, token.ELSE:
+				// Style and print keyword
+				s.WriteString(keywordStyle.Render(tok.Literal))
+				// Only add space if next is not a delimiter or open brace/paren
+				if !isDelimiter(next) && !isOpenBrace(next) && !isOpenParen(next) {
+					s.WriteString(" ")
+				}
+				continue
+			}
+		}
+
+		// 2. Space before opening paren for 'if', 'else', 'fn' (declaration)
+		if isKeyword(prev) && (prev.Type == token.IF || prev.Type == token.ELSE || prev.Type == token.FUNCTION) && isOpenParen(tok) {
+			s.WriteString(" ")
+		}
+
+		// 3. No space before opening paren for function call (identifier before paren)
+
+		// 4. Space before opening brace (if previous is not open paren or operator)
+		if isOpenBrace(tok) && !(isOpenParen(prev) || isOperator(prev)) {
+			s.WriteString(" ")
+		}
+
+		// 5. No space before closing brace
+		// (do nothing, just print)
+
+		// 6. Space around infix operators
+		if isOperator(tok) {
+			// Add space before if not at the start
+			if i > 0 && !isDelimiter(prev) {
+				s.WriteString(" ")
+			}
+			// Style operator
+			s.WriteString(operatorStyle.Render(tok.Literal))
+			// Add space after if next is not delimiter or close paren/brace
+			if !isDelimiter(next) && !isCloseParen(next) && !isCloseBrace(next) {
+				s.WriteString(" ")
+			}
+			continue
+		}
+
+		// --- Syntax highlighting ---
 		switch tok.Type {
 		case token.FUNCTION, token.LET, token.TRUE, token.FALSE, token.IF, token.ELSE, token.RETURN:
 			s.WriteString(keywordStyle.Render(tok.Literal))
@@ -644,15 +735,6 @@ func (m model) highlightCode(code string) string {
 			s.WriteString(delimiterStyle.Render(tok.Literal))
 		default:
 			s.WriteString(tok.Literal)
-		}
-
-		// Add a space after each token for readability
-		// This is a simplification - in a real syntax highlighter, we'd preserve the original spacing
-		if tok.Type != token.SEMICOLON && tok.Type != token.COMMA &&
-			tok.Type != token.LPAREN && tok.Type != token.RPAREN &&
-			tok.Type != token.LBRACE && tok.Type != token.RBRACE &&
-			tok.Type != token.LBRACKET && tok.Type != token.RBRACKET {
-			s.WriteString(" ")
 		}
 	}
 

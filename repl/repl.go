@@ -722,10 +722,13 @@ func (m model) highlightCode(code string) string {
 
 		// Handle newlines and indentation
 		if tok.Type == token.SEMICOLON || tok.Type == token.RBRACE {
-			// Print a newline after semicolon or closing brace if next is not EOF
-			if next.Type != token.EOF {
+			// Print a newline after semicolon or closing brace if next is not EOF or ELSE
+			if next.Type != token.EOF && next.Type != token.ELSE {
 				s.WriteString("\n")
 				atLineStart = true
+			} else if next.Type == token.ELSE {
+				// Add a single space between closing brace and else
+				s.WriteString(" ")
 			}
 		}
 		if tok.Type == token.LBRACE {

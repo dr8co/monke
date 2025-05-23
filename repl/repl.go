@@ -696,7 +696,7 @@ func (m model) highlightCode(code string) string {
 			s.WriteString(" ")
 		}
 		if isOperator(tok) {
-			if i > 0 && !isDelimiter(prev) {
+			if i > 0 && (!isDelimiter(prev) || isCloseParen(prev)) {
 				s.WriteString(" ")
 			}
 			s.WriteString(operatorStyle.Render(tok.Literal))

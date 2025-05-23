@@ -663,10 +663,16 @@ func (m model) highlightCode(code string) string {
 
 		// Insert indentation at the start of a new line
 		if atLineStart {
-			for range indentLevel {
-				s.WriteString("  ")
+			// Don't add indentation or newline if this is an 'else' token following a closing brace
+			if tok.Type == token.ELSE && i > 0 && tokens[i-1].Type == token.RBRACE {
+				// Skip indentation for 'else' after closing brace
+				atLineStart = false
+			} else {
+				for range indentLevel {
+					s.WriteString("  ")
+				}
+				atLineStart = false
 			}
-			atLineStart = false
 		}
 
 		// Formatting rules (same as before)
@@ -729,6 +735,8 @@ func (m model) highlightCode(code string) string {
 			} else if next.Type == token.ELSE {
 				// Add a single space between closing brace and else
 				s.WriteString(" ")
+				// Ensure the 'else' is not treated as the start of a new line
+				atLineStart = false
 			}
 		}
 		if tok.Type == token.LBRACE {

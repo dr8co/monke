@@ -696,14 +696,25 @@ func (m model) highlightCode(code string) string {
 			s.WriteString(" ")
 		}
 		if isOperator(tok) {
-			if i > 0 && (!isDelimiter(prev) || isCloseParen(prev)) {
+			// Check if this is a prefix operator (like ! or - before an expression)
+			isPrefixOp := false
+			if (tok.Type == token.BANG || tok.Type == token.MINUS) &&
+				(i == 0 || isOpenParen(prev) || isOperator(prev) || isDelimiter(prev)) {
+				isPrefixOp = true
+			}
+
+			if !isPrefixOp && i > 0 && (!isDelimiter(prev) || isCloseParen(prev)) {
 				s.WriteString(" ")
 			}
+
 			s.WriteString(operatorStyle.Render(tok.Literal))
-			if !isDelimiter(next) && !isCloseParen(next) && !isCloseBrace(next) {
+
+			// Add space after the operator only if it's not a prefix operator
+			if !isPrefixOp && !isDelimiter(next) && !isCloseParen(next) && !isCloseBrace(next) {
 				s.WriteString(" ")
 			}
 			continue
+
 		}
 
 		// Syntax highlighting

@@ -732,15 +732,39 @@ func (m model) highlightCode(code string) string {
 			s.WriteString(operatorStyle.Render(tok.Literal))
 		case token.COMMA, token.COLON, token.SEMICOLON, token.LPAREN, token.RPAREN,
 			token.LBRACE, token.RBRACE, token.LBRACKET, token.RBRACKET:
-			s.WriteString(delimiterStyle.Render(tok.Literal))
+			// For semicolons, we handle them differently if they follow a closing brace
+			if tok.Type == token.SEMICOLON && i > 0 && tokens[i-1].Type == token.RBRACE {
+				// Already handled by the special case below
+			} else {
+				s.WriteString(delimiterStyle.Render(tok.Literal))
+			}
 		default:
 			s.WriteString(tok.Literal)
 		}
 
 		// Handle newlines and indentation
-		if tok.Type == token.SEMICOLON || tok.Type == token.RBRACE {
-			// Print a newline after semicolon or closing brace if next is not EOF or ELSE
-			if next.Type != token.EOF && next.Type != token.ELSE {
+		if tok.Type == token.SEMICOLON {
+			// If a semicolon follows a closing brace, it was already written
+			if i > 0 && tokens[i-1].Type == token.RBRACE {
+				// Print a newline after semicolon if the next is not EOF or ELSE
+				if next.Type != token.EOF && next.Type != token.ELSE {
+					s.WriteString("\n")
+					atLineStart = true
+				}
+			} else {
+				// Print a newline after semicolon if next is not EOF or ELSE
+				if next.Type != token.EOF && next.Type != token.ELSE {
+					s.WriteString("\n")
+					atLineStart = true
+				}
+			}
+		} else if tok.Type == token.RBRACE {
+			// Check if the next token is a semicolon
+			if next.Type == token.SEMICOLON {
+				// Add the semicolon immediately after the closing brace without a space
+				s.WriteString(delimiterStyle.Render(";"))
+			} else if next.Type != token.EOF && next.Type != token.ELSE {
+				// No semicolon after brace, add a newline
 				s.WriteString("\n")
 				atLineStart = true
 			} else if next.Type == token.ELSE {
@@ -766,6 +790,13 @@ func (m model) highlightCode(code string) string {
 		if tok.Type == token.SEMICOLON && next.Type == token.RBRACE {
 			// Don't add an extra newline if the next token is a closing brace
 			atLineStart = false
+		}
+
+		// Special case: If this is a closing brace and the next token is a semicolon,
+		// we've already written the semicolon in the RBRACE case, so skip ahead
+		if tok.Type == token.RBRACE && next.Type == token.SEMICOLON {
+			// Skip the next token (semicolon) as we've already processed it
+			i++
 		}
 	}
 

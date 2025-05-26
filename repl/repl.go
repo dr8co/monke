@@ -439,7 +439,11 @@ func (m model) View() string {
 	var s strings.Builder
 
 	// Title
-	s.WriteString(titleStyle.Render(" Monkey Programming Language REPL "))
+	if m.options.NoColor {
+		s.WriteString(" Monkey Programming Language REPL ")
+	} else {
+		s.WriteString(titleStyle.Render(" Monkey Programming Language REPL "))
+	}
 	s.WriteString("\n")
 
 	// Welcome message
@@ -454,9 +458,17 @@ func (m model) View() string {
 		lines := strings.Split(entry.input, "\n")
 		for i, line := range lines {
 			if i == 0 {
-				s.WriteString(promptStyle.Render(PROMPT))
+				if m.options.NoColor {
+					s.WriteString(PROMPT)
+				} else {
+					s.WriteString(promptStyle.Render(PROMPT))
+				}
 			} else {
-				s.WriteString(promptStyle.Render(CONT_PROMPT))
+				if m.options.NoColor {
+					s.WriteString(CONT_PROMPT)
+				} else {
+					s.WriteString(promptStyle.Render(CONT_PROMPT))
+				}
 			}
 			s.WriteString(m.highlightCode(line))
 			s.WriteString("\n")
@@ -469,33 +481,65 @@ func (m model) View() string {
 				// Split the output to separate the error message from the tips
 				parts := strings.Split(entry.output, "\nTips:")
 				if len(parts) > 1 {
-					s.WriteString(parseErrorStyle.Render(parts[0]))
-					s.WriteString("\n")
-					s.WriteString(errorTipStyle.Render("Tips:" + parts[1]))
+					if m.options.NoColor {
+						s.WriteString(parts[0])
+						s.WriteString("\n")
+						s.WriteString("Tips:" + parts[1])
+					} else {
+						s.WriteString(parseErrorStyle.Render(parts[0]))
+						s.WriteString("\n")
+						s.WriteString(errorTipStyle.Render("Tips:" + parts[1]))
+					}
 				} else {
-					s.WriteString(parseErrorStyle.Render(entry.output))
+					if m.options.NoColor {
+						s.WriteString(entry.output)
+					} else {
+						s.WriteString(parseErrorStyle.Render(entry.output))
+					}
 				}
 			case RuntimeError:
 				// Split the output to separate the error message from the tips
 				parts := strings.Split(entry.output, "\nTips:")
 				if len(parts) > 1 {
-					s.WriteString(runtimeErrorStyle.Render(parts[0]))
-					s.WriteString("\n")
-					s.WriteString(errorTipStyle.Render("Tips:" + parts[1]))
+					if m.options.NoColor {
+						s.WriteString(parts[0])
+						s.WriteString("\n")
+						s.WriteString("Tips:" + parts[1])
+					} else {
+						s.WriteString(runtimeErrorStyle.Render(parts[0]))
+						s.WriteString("\n")
+						s.WriteString(errorTipStyle.Render("Tips:" + parts[1]))
+					}
 				} else {
-					s.WriteString(runtimeErrorStyle.Render(entry.output))
+					if m.options.NoColor {
+						s.WriteString(entry.output)
+					} else {
+						s.WriteString(runtimeErrorStyle.Render(entry.output))
+					}
 				}
 			default:
-				s.WriteString(errorStyle.Render(entry.output))
+				if m.options.NoColor {
+					s.WriteString(entry.output)
+				} else {
+					s.WriteString(errorStyle.Render(entry.output))
+				}
 			}
 		} else {
-			s.WriteString(resultStyle.Render(entry.output))
+			if m.options.NoColor {
+				s.WriteString(entry.output)
+			} else {
+				s.WriteString(resultStyle.Render(entry.output))
+			}
 		}
 
 		// Show evaluation time if it took more than 10 ms
 		if entry.evaluationTime > 10*time.Millisecond {
 			timeStr := fmt.Sprintf(" (%.2fs)", entry.evaluationTime.Seconds())
-			s.WriteString(historyStyle.Render(timeStr))
+			if m.options.NoColor {
+				s.WriteString(timeStr)
+			} else {
+				s.WriteString(historyStyle.Render(timeStr))
+			}
 		}
 
 		s.WriteString("\n\n")
@@ -503,7 +547,11 @@ func (m model) View() string {
 
 	// Current evaluation
 	if m.evaluating {
-		s.WriteString(promptStyle.Render(PROMPT))
+		if m.options.NoColor {
+			s.WriteString(PROMPT)
+		} else {
+			s.WriteString(promptStyle.Render(PROMPT))
+		}
 		s.WriteString(m.highlightCode(m.currentInput))
 		s.WriteString("\n")
 		s.WriteString(m.spinner.View())
@@ -513,7 +561,11 @@ func (m model) View() string {
 
 	// Show multiline buffer if in multiline mode
 	if m.isMultiline && !m.evaluating {
-		s.WriteString(historyStyle.Render("Current multiline input:\n"))
+		if m.options.NoColor {
+			s.WriteString("Current multiline input:\n")
+		} else {
+			s.WriteString(historyStyle.Render("Current multiline input:\n"))
+		}
 		// Instead of splitting by lines, highlight the entire buffer for proper indentation
 		s.WriteString(m.highlightCode(m.multilineBuffer))
 		s.WriteString("\n")
@@ -523,9 +575,17 @@ func (m model) View() string {
 	if !m.evaluating {
 		// Set the appropriate prompt based on whether we're in multiline mode
 		if m.isMultiline {
-			m.textInput.Prompt = promptStyle.Render(CONT_PROMPT)
+			if m.options.NoColor {
+				m.textInput.Prompt = CONT_PROMPT
+			} else {
+				m.textInput.Prompt = promptStyle.Render(CONT_PROMPT)
+			}
 		} else {
-			m.textInput.Prompt = promptStyle.Render(PROMPT)
+			if m.options.NoColor {
+				m.textInput.Prompt = PROMPT
+			} else {
+				m.textInput.Prompt = promptStyle.Render(PROMPT)
+			}
 		}
 		s.WriteString(m.textInput.View())
 		s.WriteString("\n")
@@ -538,7 +598,11 @@ func (m model) View() string {
 	} else {
 		helpText += " | Multiline input supported for unbalanced brackets"
 	}
-	s.WriteString(historyStyle.Render(helpText))
+	if m.options.NoColor {
+		s.WriteString(helpText)
+	} else {
+		s.WriteString(historyStyle.Render(helpText))
+	}
 
 	return s.String()
 }
@@ -591,12 +655,8 @@ func formatRuntimeError(errorMsg string) string {
 	return s.String()
 }
 
-// highlightCode applies syntax highlighting to Monkey code
+// highlightCode applies syntax highlighting and formatting to Monkey code
 func (m model) highlightCode(code string) string {
-	if m.options.NoColor {
-		return code
-	}
-
 	l := lexer.New(code)
 	var s strings.Builder
 
@@ -679,7 +739,11 @@ func (m model) highlightCode(code string) string {
 		if isKeyword(tok) && tok.Type != token.TRUE && tok.Type != token.FALSE {
 			switch tok.Type {
 			case token.LET, token.FUNCTION, token.RETURN, token.IF, token.ELSE:
-				s.WriteString(keywordStyle.Render(tok.Literal))
+				if m.options.NoColor {
+					s.WriteString(tok.Literal)
+				} else {
+					s.WriteString(keywordStyle.Render(tok.Literal))
+				}
 				if !isDelimiter(next) && !isOpenBrace(next) && !isOpenParen(next) {
 					s.WriteString(" ")
 				}
@@ -707,7 +771,11 @@ func (m model) highlightCode(code string) string {
 				s.WriteString(" ")
 			}
 
-			s.WriteString(operatorStyle.Render(tok.Literal))
+			if m.options.NoColor {
+				s.WriteString(tok.Literal)
+			} else {
+				s.WriteString(operatorStyle.Render(tok.Literal))
+			}
 
 			// Add space after the operator only if it's not a prefix operator
 			if !isPrefixOp && !isDelimiter(next) && !isCloseParen(next) && !isCloseBrace(next) {
@@ -720,23 +788,47 @@ func (m model) highlightCode(code string) string {
 		// Syntax highlighting
 		switch tok.Type {
 		case token.FUNCTION, token.LET, token.TRUE, token.FALSE, token.IF, token.ELSE, token.RETURN:
-			s.WriteString(keywordStyle.Render(tok.Literal))
+			if m.options.NoColor {
+				s.WriteString(tok.Literal)
+			} else {
+				s.WriteString(keywordStyle.Render(tok.Literal))
+			}
 		case token.IDENT:
-			s.WriteString(identifierStyle.Render(tok.Literal))
+			if m.options.NoColor {
+				s.WriteString(tok.Literal)
+			} else {
+				s.WriteString(identifierStyle.Render(tok.Literal))
+			}
 		case token.INT:
-			s.WriteString(literalStyle.Render(tok.Literal))
+			if m.options.NoColor {
+				s.WriteString(tok.Literal)
+			} else {
+				s.WriteString(literalStyle.Render(tok.Literal))
+			}
 		case token.STRING:
-			s.WriteString(stringStyle.Render("\"" + tok.Literal + "\""))
+			if m.options.NoColor {
+				s.WriteString("\"" + tok.Literal + "\"")
+			} else {
+				s.WriteString(stringStyle.Render("\"" + tok.Literal + "\""))
+			}
 		case token.ASSIGN, token.PLUS, token.MINUS, token.BANG, token.ASTERISK, token.SLASH,
 			token.LT, token.GT, token.EQ, token.NOT_EQ:
-			s.WriteString(operatorStyle.Render(tok.Literal))
+			if m.options.NoColor {
+				s.WriteString(tok.Literal)
+			} else {
+				s.WriteString(operatorStyle.Render(tok.Literal))
+			}
 		case token.COMMA, token.COLON, token.SEMICOLON, token.LPAREN, token.RPAREN,
 			token.LBRACE, token.RBRACE, token.LBRACKET, token.RBRACKET:
 			// For semicolons, we handle them differently if they follow a closing brace
 			if tok.Type == token.SEMICOLON && i > 0 && tokens[i-1].Type == token.RBRACE {
 				// Already handled by the special case below
 			} else {
-				s.WriteString(delimiterStyle.Render(tok.Literal))
+				if m.options.NoColor {
+					s.WriteString(tok.Literal)
+				} else {
+					s.WriteString(delimiterStyle.Render(tok.Literal))
+				}
 			}
 		default:
 			s.WriteString(tok.Literal)
@@ -762,7 +854,11 @@ func (m model) highlightCode(code string) string {
 			// Check if the next token is a semicolon
 			if next.Type == token.SEMICOLON {
 				// Add the semicolon immediately after the closing brace without a space
-				s.WriteString(delimiterStyle.Render(";"))
+				if m.options.NoColor {
+					s.WriteString(";")
+				} else {
+					s.WriteString(delimiterStyle.Render(";"))
+				}
 			} else if next.Type != token.EOF && next.Type != token.ELSE {
 				// No semicolon after brace, add a newline
 				s.WriteString("\n")

@@ -17,9 +17,10 @@ package object
 
 import (
 	"fmt"
-	"github.com/dr8co/monke/ast"
 	"hash/fnv"
 	"strings"
+
+	"github.com/dr8co/monke/ast"
 )
 
 const (

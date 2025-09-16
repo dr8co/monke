@@ -1,10 +1,11 @@
 package evaluator
 
 import (
+	"testing"
+
 	"github.com/dr8co/monke/lexer"
 	"github.com/dr8co/monke/object"
 	"github.com/dr8co/monke/parser"
-	"testing"
 )
 
 // benchmarkEval is a helper function for benchmarking the evaluator

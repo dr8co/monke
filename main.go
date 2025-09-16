@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"os/user"
+
 	"github.com/dr8co/monke/evaluator"
 	"github.com/dr8co/monke/lexer"
 	"github.com/dr8co/monke/object"
 	"github.com/dr8co/monke/parser"
 	"github.com/dr8co/monke/repl"
-	"os"
-	"os/user"
 )
 
 const VERSION = "0.1.0"

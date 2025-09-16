@@ -12,8 +12,9 @@
 package ast
 
 import (
-	"github.com/dr8co/monke/token"
 	"strings"
+
+	"github.com/dr8co/monke/token"
 )
 
 // Node is the base interface for all AST nodes.

@@ -3,21 +3,24 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/dr8co/monke/evaluator"
-	"github.com/dr8co/monke/lexer"
-	"github.com/dr8co/monke/object"
-	"github.com/dr8co/monke/parser"
 	"os"
 	"runtime"
 	"runtime/pprof"
 	"runtime/trace"
 	"time"
+
+	"github.com/dr8co/monke/evaluator"
+	"github.com/dr8co/monke/lexer"
+	"github.com/dr8co/monke/object"
+	"github.com/dr8co/monke/parser"
 )
 
-var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
-var memprofile = flag.String("memprofile", "", "write memory profile to file")
-var traceprofile = flag.String("trace", "", "write execution trace to file")
-var program = flag.String("program", "fibonacci", "program to profile (fibonacci, factorial, array, hash, complex)")
+var (
+	cpuprofile   = flag.String("cpuprofile", "", "write cpu profile to file")
+	memprofile   = flag.String("memprofile", "", "write memory profile to file")
+	traceprofile = flag.String("trace", "", "write execution trace to file")
+	program      = flag.String("program", "fibonacci", "program to profile (fibonacci, factorial, array, hash, complex)")
+)
 
 // Sample Monkey programs for profiling
 var programs = map[string]string{

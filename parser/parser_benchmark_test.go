@@ -1,8 +1,9 @@
 package parser
 
 import (
-	"github.com/dr8co/monke/lexer"
 	"testing"
+
+	"github.com/dr8co/monke/lexer"
 )
 
 // benchmarkParser is a helper function for benchmarking the parser

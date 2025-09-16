@@ -32,8 +32,8 @@ import (
 )
 
 const (
-	PROMPT      = ">> "
-	CONT_PROMPT = ".. "
+	Prompt     = ">> "
+	ContPrompt = ".. "
 )
 
 // Options contains configuration options for the REPL
@@ -139,6 +139,14 @@ type model struct {
 	options         Options
 }
 
+// applyStyle applies a lipgloss style to a string, respecting the NoColor option
+func (m model) applyStyle(style lipgloss.Style, text string) string {
+	if m.options.NoColor {
+		return text
+	}
+	return style.Render(text)
+}
+
 // historyEntry represents a single entry in the REPL history
 type historyEntry struct {
 	input          string
@@ -154,7 +162,7 @@ func initialModel(username string, options Options) model {
 	ti.Placeholder = "Enter Monkey code"
 	ti.Focus()
 	ti.Width = 80
-	ti.Prompt = promptStyle.Render(PROMPT)
+	ti.Prompt = promptStyle.Render(Prompt)
 
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -320,6 +328,29 @@ func evalCmd(input string, env *object.Environment, debug bool) tea.Cmd {
 	}
 }
 
+// formatError formats error messages.
+func (m model) formatError(errorStyle *lipgloss.Style, entry *historyEntry, s *strings.Builder) {
+	// Split the output to separate the error message from the tips
+	parts := strings.Split(entry.output, "\nTips:")
+	if len(parts) > 1 {
+		if m.options.NoColor {
+			s.WriteString(parts[0])
+			s.WriteString("\n")
+			s.WriteString("Tips:" + parts[1])
+		} else {
+			s.WriteString(errorStyle.Render(parts[0]))
+			s.WriteString("\n")
+			s.WriteString(errorTipStyle.Render("Tips:" + parts[1]))
+		}
+	} else {
+		if m.options.NoColor {
+			s.WriteString(entry.output)
+		} else {
+			s.WriteString(errorStyle.Render(entry.output))
+		}
+	}
+}
+
 // Update handles all the updates to our model
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
@@ -439,11 +470,7 @@ func (m model) View() string {
 	var s strings.Builder
 
 	// Title
-	if m.options.NoColor {
-		s.WriteString(" Monkey Programming Language REPL ")
-	} else {
-		s.WriteString(titleStyle.Render(" Monkey Programming Language REPL "))
-	}
+	s.WriteString(m.applyStyle(titleStyle, " Monkey Programming Language REPL "))
 	s.WriteString("\n")
 
 	// Welcome message
@@ -458,17 +485,9 @@ func (m model) View() string {
 		lines := strings.Split(entry.input, "\n")
 		for i, line := range lines {
 			if i == 0 {
-				if m.options.NoColor {
-					s.WriteString(PROMPT)
-				} else {
-					s.WriteString(promptStyle.Render(PROMPT))
-				}
+				s.WriteString(m.applyStyle(promptStyle, Prompt))
 			} else {
-				if m.options.NoColor {
-					s.WriteString(CONT_PROMPT)
-				} else {
-					s.WriteString(promptStyle.Render(CONT_PROMPT))
-				}
+				s.WriteString(m.applyStyle(promptStyle, ContPrompt))
 			}
 			s.WriteString(m.highlightCode(line))
 			s.WriteString("\n")
@@ -478,45 +497,9 @@ func (m model) View() string {
 			// Use different styles based on the error type
 			switch entry.errorType {
 			case ParseError:
-				// Split the output to separate the error message from the tips
-				parts := strings.Split(entry.output, "\nTips:")
-				if len(parts) > 1 {
-					if m.options.NoColor {
-						s.WriteString(parts[0])
-						s.WriteString("\n")
-						s.WriteString("Tips:" + parts[1])
-					} else {
-						s.WriteString(parseErrorStyle.Render(parts[0]))
-						s.WriteString("\n")
-						s.WriteString(errorTipStyle.Render("Tips:" + parts[1]))
-					}
-				} else {
-					if m.options.NoColor {
-						s.WriteString(entry.output)
-					} else {
-						s.WriteString(parseErrorStyle.Render(entry.output))
-					}
-				}
+				m.formatError(&parseErrorStyle, &entry, &s)
 			case RuntimeError:
-				// Split the output to separate the error message from the tips
-				parts := strings.Split(entry.output, "\nTips:")
-				if len(parts) > 1 {
-					if m.options.NoColor {
-						s.WriteString(parts[0])
-						s.WriteString("\n")
-						s.WriteString("Tips:" + parts[1])
-					} else {
-						s.WriteString(runtimeErrorStyle.Render(parts[0]))
-						s.WriteString("\n")
-						s.WriteString(errorTipStyle.Render("Tips:" + parts[1]))
-					}
-				} else {
-					if m.options.NoColor {
-						s.WriteString(entry.output)
-					} else {
-						s.WriteString(runtimeErrorStyle.Render(entry.output))
-					}
-				}
+				m.formatError(&runtimeErrorStyle, &entry, &s)
 			default:
 				if m.options.NoColor {
 					s.WriteString(entry.output)
@@ -548,9 +531,9 @@ func (m model) View() string {
 	// Current evaluation
 	if m.evaluating {
 		if m.options.NoColor {
-			s.WriteString(PROMPT)
+			s.WriteString(Prompt)
 		} else {
-			s.WriteString(promptStyle.Render(PROMPT))
+			s.WriteString(promptStyle.Render(Prompt))
 		}
 		s.WriteString(m.highlightCode(m.currentInput))
 		s.WriteString("\n")
@@ -576,15 +559,15 @@ func (m model) View() string {
 		// Set the appropriate prompt based on whether we're in multiline mode
 		if m.isMultiline {
 			if m.options.NoColor {
-				m.textInput.Prompt = CONT_PROMPT
+				m.textInput.Prompt = ContPrompt
 			} else {
-				m.textInput.Prompt = promptStyle.Render(CONT_PROMPT)
+				m.textInput.Prompt = promptStyle.Render(ContPrompt)
 			}
 		} else {
 			if m.options.NoColor {
-				m.textInput.Prompt = PROMPT
+				m.textInput.Prompt = Prompt
 			} else {
-				m.textInput.Prompt = promptStyle.Render(PROMPT)
+				m.textInput.Prompt = promptStyle.Render(Prompt)
 			}
 		}
 		s.WriteString(m.textInput.View())

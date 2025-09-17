@@ -26,7 +26,6 @@ import (
 )
 
 var (
-
 	// TRUE represents the boolean value 'true' within the Monke language and is used in logical evaluations and comparisons.
 	TRUE = &object.Boolean{Value: true}
 

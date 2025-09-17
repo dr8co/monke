@@ -25,6 +25,7 @@ import (
 )
 
 const (
+	// Precedence values for operators.
 	_ int = iota
 	LOWEST
 	EQUALS      // ==
@@ -54,6 +55,7 @@ type (
 	infixParseFn  func(ast.Expression) ast.Expression
 )
 
+// Parser represents a Monke parser.
 type Parser struct {
 	l      *lexer.Lexer
 	errors []string
@@ -110,6 +112,7 @@ func New(l *lexer.Lexer) *Parser {
 func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
 	p.prefixParseFns[tokenType] = fn
 }
+
 func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
 	p.infixParseFns[tokenType] = fn
 }
@@ -149,6 +152,7 @@ func (p *Parser) curPrecedence() int {
 
 	return LOWEST
 }
+
 func (p *Parser) nextToken() {
 	p.currentToken = p.peekToken
 	p.peekToken = p.l.NextToken()
@@ -162,8 +166,8 @@ func (p *Parser) ParseProgram() *ast.Program {
 	program.Statements = []ast.Statement{}
 
 	for !p.currentTokenIs(token.EOF) {
-		stmt := p.parseStatement()
-		if stmt != nil {
+		//nolint:staticcheck
+		if stmt := p.parseStatement(); stmt != nil {
 			program.Statements = append(program.Statements, stmt)
 		}
 		p.nextToken()
@@ -172,6 +176,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
+//nolint:staticcheck
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.currentToken.Type {
 	case token.LET:
@@ -207,10 +212,9 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 	if p.peekTokenIs(t) {
 		p.nextToken()
 		return true
-	} else {
-		p.peekError(t)
-		return false
 	}
+	p.peekError(t)
+	return false
 }
 
 func (p *Parser) currentTokenIs(t token.TokenType) bool {
@@ -354,8 +358,8 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	p.nextToken()
 
 	for !p.currentTokenIs(token.RBRACE) && !p.currentTokenIs(token.EOF) {
-		stmt := p.parseStatement()
-		if stmt != nil {
+		//nolint:staticcheck
+		if stmt := p.parseStatement(); stmt != nil {
 			block.Statements = append(block.Statements, stmt)
 		}
 		p.nextToken()

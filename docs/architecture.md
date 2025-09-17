@@ -7,7 +7,7 @@ interpreter and explains the key design decisions made during its implementation
 
 The Monke interpreter follows a classic interpreter design pattern with the following pipeline:
 
-```
+```txt
 Source Code → Lexer → Parser → AST → Evaluator → Result
 ```
 
@@ -28,6 +28,7 @@ The lexer is responsible for breaking down the source code into tokens.
 It reads the input character by character and produces a stream of tokens.
 
 **Design Decisions:**
+
 - **Simple Character-by-Character Scanning**: The lexer uses a straightforward approach of reading one character at a time, which makes the code easy to understand and maintain.
 - **Look-Ahead**: The lexer uses a one-character look-ahead to handle multi-character tokens like `==` and `!=`.
 - **No Regex**: The lexer avoids using regular expressions, making it more portable and easier to understand.
@@ -39,6 +40,7 @@ The parser converts the token stream into an Abstract Syntax Tree (AST).
 It implements a recursive descent parser with Pratt parsing (precedence climbing) for expressions.
 
 **Design Decisions:**
+
 - **Pratt Parsing**: The parser uses Pratt parsing (also known as precedence climbing) for handling expressions with different operator precedences. This approach is both powerful and relatively simple to implement.
 - **Recursive Descent**: For statements and other language constructs, the parser uses recursive descent, which closely mirrors the grammar of the language.
 - **Error Reporting**: The parser collects errors during parsing rather than stopping at the first error, allowing it to report multiple issues at once.
@@ -50,6 +52,7 @@ The Abstract Syntax Tree (AST) represents the structure of the program.
 Each node in the tree corresponds to a language construct (expression, statement, etc.).
 
 **Design Decisions:**
+
 - **Node Interface**: All AST nodes implement a common `Node` interface, allowing them to be treated uniformly.
 - **Expression and Statement Interfaces**: Nodes are further categorized as either expressions (which produce values) or statements (which perform actions), reflecting the language's grammar.
 - **String Representation**: Each node can produce a string representation of itself, which is useful for debugging and testing.
@@ -60,6 +63,7 @@ Each node in the tree corresponds to a language construct (expression, statement
 The evaluator traverses the AST and executes the program. It implements the semantics of the Monke language.
 
 **Design Decisions:**
+
 - **Tree-Walking Interpreter**: The evaluator directly traverses and evaluates the AST without any intermediate representation, prioritizing simplicity over performance.
 - **Environment-Based Scoping**: Variable scopes are implemented using environment objects that can be nested to support lexical scoping.
 - **First-Class Functions**: Functions are treated as first-class values, allowing them to be passed around, returned from other functions, and stored in variables.
@@ -73,6 +77,7 @@ The object system defines the runtime values that can exist in a Monke program.
 It includes integers, booleans, strings, arrays, hashes, functions, and more.
 
 **Design Decisions:**
+
 - **Object Interface**: All runtime values implement a common `Object` interface, allowing them to be treated uniformly.
 - **Value Representation**: Each type of value has its own struct with appropriate fields.
 - **Hashable Interface**: Objects that can be used as hash keys implement the `Hashable` interface, allowing them to be used in hash maps.
@@ -83,6 +88,7 @@ It includes integers, booleans, strings, arrays, hashes, functions, and more.
 The REPL (Read-Eval-Print Loop) provides an interactive interface for users to enter Monke code and see the results immediately.
 
 **Design Decisions:**
+
 - **Modern Terminal UI**: The REPL uses the Charm libraries (Bubbletea, Bubbles, and Lipgloss) to create a modern, user-friendly terminal interface.
 - **Command History**: The REPL keeps track of command history, allowing users to see their previous inputs and results.
 - **Styled Output**: Different types of output (results, errors) are styled differently for better readability.

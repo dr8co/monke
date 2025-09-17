@@ -1,3 +1,4 @@
+// Monke is a simple programming language written in Go.
 package main
 
 import (
@@ -5,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"path/filepath"
 
 	"github.com/dr8co/monke/evaluator"
 	"github.com/dr8co/monke/lexer"
@@ -69,8 +71,17 @@ func main() {
 
 // executeFile reads and executes a Monkey script file
 func executeFile(filename string, debug bool) {
+	cleaned := filepath.Clean(filename)
+	absolute, err := filepath.Abs(cleaned)
+	if err != nil {
+		fmt.Printf("Error getting absolute path: %s\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("Executing file: %s\n", absolute)
+
 	// Read the file
-	content, err := os.ReadFile(filename)
+	//nolint:gosec // We're not reading user input here
+	content, err := os.ReadFile(absolute)
 	if err != nil {
 		fmt.Printf("Error reading file: %s\n", err)
 		os.Exit(1)

@@ -1,3 +1,4 @@
+// Command profile runs a Monkey program and measures its execution time.
 package main
 
 import (
@@ -235,6 +236,9 @@ var builtins = map[string]*object.Builtin{
 
 func main() {
 	flag.Parse()
+	exit := func(code int) {
+		os.Exit(code)
+	}
 
 	// Set up CPU profiling if requested
 	if *cpuprofile != "" {
@@ -244,7 +248,7 @@ func main() {
 			if err != nil {
 				return
 			}
-			os.Exit(1)
+			exit(1)
 		}
 		defer func(f *os.File) {
 			err := f.Close()
@@ -257,7 +261,7 @@ func main() {
 			if err != nil {
 				return
 			}
-			os.Exit(1)
+			exit(2)
 		}
 		defer pprof.StopCPUProfile()
 	}
@@ -270,7 +274,7 @@ func main() {
 			if err != nil {
 				return
 			}
-			os.Exit(1)
+			exit(1)
 		}
 		defer func(f *os.File) {
 			err := f.Close()
@@ -283,7 +287,7 @@ func main() {
 			if err != nil {
 				return
 			}
-			os.Exit(1)
+			exit(1)
 		}
 		defer trace.Stop()
 	}
@@ -299,7 +303,7 @@ func main() {
 		if err != nil {
 			return
 		}
-		os.Exit(1)
+		exit(1)
 	}
 
 	// Create an environment with built-in functions
@@ -328,7 +332,7 @@ func main() {
 				return
 			}
 		}
-		os.Exit(1)
+		exit(1)
 	}
 
 	// Evaluation
@@ -347,7 +351,7 @@ func main() {
 			if err != nil {
 				return
 			}
-			os.Exit(1)
+			exit(1)
 		}
 		defer func(f *os.File) {
 			err := f.Close()
@@ -361,7 +365,7 @@ func main() {
 			if err != nil {
 				return
 			}
-			os.Exit(1)
+			exit(1)
 		}
 	}
 }

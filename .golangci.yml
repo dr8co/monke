@@ -1,0 +1,41 @@
+# Recommended golangci-lint configuration for Go projects
+# See https://golangci-lint.run/usage/configuration/ for more options
+version: "2"
+
+run:
+  timeout: 5m
+  tests: false
+
+linters:
+  enable:
+    - asasalint
+    - dogsled
+    - durationcheck
+    - goconst
+    - gocritic
+    - gocyclo
+    - gosec
+    - iface
+    - intrange
+    - misspell
+    - nakedret
+    - nilerr
+    - nolintlint
+    - paralleltest
+    - perfsprint
+    - prealloc
+    - revive
+    - recvcheck
+    - unparam
+    - wastedassign
+    - whitespace
+    - unconvert
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

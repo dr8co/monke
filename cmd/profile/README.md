@@ -52,7 +52,3 @@ To view the execution trace:
 ```bash
 go tool trace trace.out
 ```
-
-## Results
-
-The profiling results are documented in the `/profile_results.md` file at the root of the project.

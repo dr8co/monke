@@ -14,15 +14,16 @@
 // parser to understand the structure of the program.
 package token
 
-// TokenType represents the type of token.
-type TokenType string
+// Type represents the type of token.
+type Type string
 
 // Token represents a single token in the source code.
 type Token struct {
-	Type    TokenType
+	Type    Type
 	Literal string
 }
 
+//nolint:revive
 const (
 	// Single-character tokens
 	ILLEGAL = "ILLEGAL"
@@ -66,7 +67,7 @@ const (
 	RETURN   = "RETURN"
 )
 
-var keywords = map[string]TokenType{
+var keywords = map[string]Type{
 	"fn":     FUNCTION,
 	"let":    LET,
 	"true":   TRUE,
@@ -79,7 +80,7 @@ var keywords = map[string]TokenType{
 // LookupIdent checks if the given identifier is a keyword.
 // If it is, it returns the corresponding token type.
 // Otherwise, it returns the IDENT token type.
-func LookupIdent(ident string) TokenType {
+func LookupIdent(ident string) Type {
 	if tok, ok := keywords[ident]; ok {
 		return tok
 	}

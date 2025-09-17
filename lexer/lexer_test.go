@@ -31,7 +31,7 @@ if (5 < 10) {
 {"foo": "bar"}
 `
 	tests := []struct {
-		expectedType    token.TokenType
+		expectedType    token.Type
 		expectedLiteral string
 	}{
 		{token.LET, "let"},

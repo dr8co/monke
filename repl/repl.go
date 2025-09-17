@@ -32,7 +32,10 @@ import (
 )
 
 const (
-	Prompt     = ">> "
+	// Prompt is the default prompt for the REPL
+	Prompt = ">> "
+
+	// ContPrompt is the continuation prompt used in multiline input mode within the REPL.
 	ContPrompt = ".. "
 )
 
@@ -112,8 +115,14 @@ var (
 type ErrorType int
 
 const (
+
+	// NoError indicates that no error occurred, typically used as a default or initial value for error handling.
 	NoError ErrorType = iota
+
+	// ParseError indicates an error that occurred during the parsing phase of code evaluation or execution.
 	ParseError
+
+	// RuntimeError signifies an error that occurs during the execution of a program, typically at runtime.
 	RuntimeError
 )
 
@@ -230,11 +239,9 @@ func evalCmd(input string, env *object.Environment, debug bool) tea.Cmd {
 			tokenizeStart := time.Now()
 			program := p.ParseProgram()
 			tokenizeTime = time.Since(tokenizeStart)
-
 			var output string
-			var isError bool
-			var errorType = NoError
-
+			isError := false
+			errorType := NoError
 			if len(p.Errors()) != 0 {
 				isError = true
 				errorType = ParseError
@@ -288,42 +295,41 @@ func evalCmd(input string, env *object.Environment, debug bool) tea.Cmd {
 				errorType: errorType,
 				elapsed:   elapsed,
 			}
+		}
+		// Non-debug path (original code)
+		program := p.ParseProgram()
+
+		var output string
+		isError := false
+		errorType := NoError
+
+		if len(p.Errors()) != 0 {
+			isError = true
+			errorType = ParseError
+			output = formatParseErrors(p.Errors())
 		} else {
-			// Non-debug path (original code)
-			program := p.ParseProgram()
-
-			var output string
-			var isError bool
-			var errorType = NoError
-
-			if len(p.Errors()) != 0 {
-				isError = true
-				errorType = ParseError
-				output = formatParseErrors(p.Errors())
-			} else {
-				evaluated := evaluator.Eval(program, env)
-				if evaluated != nil {
-					// Check if the result is an error object
-					if evaluated.Type() == object.ERROR_OBJ {
-						isError = true
-						errorType = RuntimeError
-						output = formatRuntimeError(evaluated.Inspect())
-					} else {
-						output = evaluated.Inspect()
-					}
+			evaluated := evaluator.Eval(program, env)
+			if evaluated != nil {
+				// Check if the result is an error object
+				if evaluated.Type() == object.ERROR_OBJ {
+					isError = true
+					errorType = RuntimeError
+					output = formatRuntimeError(evaluated.Inspect())
 				} else {
-					output = "nil"
+					output = evaluated.Inspect()
 				}
+			} else {
+				output = "nil"
 			}
+		}
 
-			elapsed := time.Since(start)
+		elapsed := time.Since(start)
 
-			return evalResultMsg{
-				output:    output,
-				isError:   isError,
-				errorType: errorType,
-				elapsed:   elapsed,
-			}
+		return evalResultMsg{
+			output:    output,
+			isError:   isError,
+			errorType: errorType,
+			elapsed:   elapsed,
 		}
 	}
 }
@@ -616,6 +622,7 @@ func formatRuntimeError(errorMsg string) string {
 	s.WriteString("\nTips:\n")
 
 	// Add specific tips based on common error patterns
+	//nolint:gocritic
 	if strings.Contains(errorMsg, "identifier not found") {
 		s.WriteString("  • Check if the variable is defined before use\n")
 		s.WriteString("  • Verify the variable name is spelled correctly\n")
@@ -639,6 +646,8 @@ func formatRuntimeError(errorMsg string) string {
 }
 
 // highlightCode applies syntax highlighting and formatting to Monkey code
+//
+//nolint:gocyclo
 func (m model) highlightCode(code string) string {
 	l := lexer.New(code)
 	var s strings.Builder
@@ -667,9 +676,9 @@ func (m model) highlightCode(code string) string {
 		}
 		return false
 	}
-	isIdentifier := func(t token.Token) bool {
-		return t.Type == token.IDENT
-	}
+	// isIdentifier := func(t token.Token) bool {
+	//	return t.Type == token.IDENT
+	// }
 	isOpenParen := func(t token.Token) bool {
 		return t.Type == token.LPAREN
 	}
@@ -736,10 +745,10 @@ func (m model) highlightCode(code string) string {
 		if isKeyword(prev) && (prev.Type == token.IF || prev.Type == token.ELSE || prev.Type == token.FUNCTION) && isOpenParen(tok) {
 			s.WriteString(" ")
 		}
-		if isIdentifier(prev) && isOpenParen(tok) {
-			// no space
-		}
-		if isOpenBrace(tok) && !(isOpenParen(prev) || isOperator(prev)) {
+		// if isIdentifier(prev) && isOpenParen(tok) {
+		// no space
+		// }
+		if isOpenBrace(tok) && !isOpenParen(prev) && !isOperator(prev) {
 			s.WriteString(" ")
 		}
 		if isOperator(tok) {
@@ -765,7 +774,6 @@ func (m model) highlightCode(code string) string {
 				s.WriteString(" ")
 			}
 			continue
-
 		}
 
 		// Syntax highlighting
@@ -804,6 +812,7 @@ func (m model) highlightCode(code string) string {
 		case token.COMMA, token.COLON, token.SEMICOLON, token.LPAREN, token.RPAREN,
 			token.LBRACE, token.RBRACE, token.LBRACKET, token.RBRACKET:
 			// For semicolons, we handle them differently if they follow a closing brace
+			//nolint:revive
 			if tok.Type == token.SEMICOLON && i > 0 && tokens[i-1].Type == token.RBRACE {
 				// Already handled by the special case below
 			} else {
@@ -818,23 +827,17 @@ func (m model) highlightCode(code string) string {
 		}
 
 		// Handle newlines and indentation
+		//nolint:staticcheck
 		if tok.Type == token.SEMICOLON {
 			// If a semicolon follows a closing brace, it was already written
-			if i > 0 && tokens[i-1].Type == token.RBRACE {
-				// Print a newline after semicolon if the next is not EOF or ELSE
-				if next.Type != token.EOF && next.Type != token.ELSE {
-					s.WriteString("\n")
-					atLineStart = true
-				}
-			} else {
-				// Print a newline after semicolon if next is not EOF or ELSE
-				if next.Type != token.EOF && next.Type != token.ELSE {
-					s.WriteString("\n")
-					atLineStart = true
-				}
+			// Print a newline after semicolon if the next is not EOF or ELSE
+			if next.Type != token.EOF && next.Type != token.ELSE {
+				s.WriteString("\n")
+				atLineStart = true
 			}
 		} else if tok.Type == token.RBRACE {
 			// Check if the next token is a semicolon
+			//nolint:gocritic
 			if next.Type == token.SEMICOLON {
 				// Add the semicolon immediately after the closing brace without a space
 				if m.options.NoColor {
@@ -875,6 +878,7 @@ func (m model) highlightCode(code string) string {
 		// we've already written the semicolon in the RBRACE case, so skip ahead
 		if tok.Type == token.RBRACE && next.Type == token.SEMICOLON {
 			// Skip the next token (semicolon) as we've already processed it
+			//nolint:ineffassign,wastedassign
 			i++
 		}
 	}

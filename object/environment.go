@@ -1,5 +1,6 @@
 package object
 
+// Environment represents a scope in a program.
 type Environment struct {
 	store map[string]Object
 	outer *Environment
@@ -21,6 +22,8 @@ func NewEnclosedEnvironment(outer *Environment) *Environment {
 	return env
 }
 
+// Get returns the value of the given variable name in the environment.
+// If the variable is not found, it looks in the outer environment, if any.
 func (e *Environment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok && e.outer != nil {
@@ -29,6 +32,7 @@ func (e *Environment) Get(name string) (Object, bool) {
 	return obj, ok
 }
 
+// Set sets the value of the given variable name in the environment.
 func (e *Environment) Set(name string, val Object) Object {
 	e.store[name] = val
 	return val

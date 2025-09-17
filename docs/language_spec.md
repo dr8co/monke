@@ -19,7 +19,7 @@ Monke does not currently support comments.
 
 Identifiers start with a letter or underscore and can contain letters, digits, and underscores.
 
-```
+```txt
 identifier = letter { letter | digit | "_" } .
 letter = "a"..."z" | "A"..."Z" | "_" .
 digit = "0"..."9" .
@@ -29,7 +29,7 @@ digit = "0"..."9" .
 
 The following keywords are reserved and cannot be used as identifiers:
 
-```
+```txt
 fn    let    true    false    if    else    return
 ```
 
@@ -37,7 +37,7 @@ fn    let    true    false    if    else    return
 
 The following characters and character sequences represent operators and delimiters:
 
-```
+```txt
 +    -    *    /    =    ==    !=    <    >    !
 (    )    {    }    [    ]    ,    ;    :
 ```
@@ -48,7 +48,7 @@ The following characters and character sequences represent operators and delimit
 
 Integer literals consist of a sequence of digits.
 
-```
+```txt
 integer = digit { digit } .
 ```
 
@@ -56,7 +56,7 @@ integer = digit { digit } .
 
 String literals are enclosed in double quotes.
 
-```
+```txt
 string = '"' { character } '"' .
 ```
 
@@ -68,7 +68,7 @@ Boolean literals are `true` and `false`.
 
 Array literals are enclosed in square brackets and contain a comma-separated list of expressions.
 
-```
+```txt
 array = "[" [ expression { "," expression } ] "]" .
 ```
 
@@ -76,7 +76,7 @@ array = "[" [ expression { "," expression } ] "]" .
 
 Hash literals are enclosed in curly braces and contain a comma-separated list of key-value pairs.
 
-```
+```txt
 hash = "{" [ expression ":" expression { "," expression ":" expression } ] "}" .
 ```
 
@@ -108,7 +108,7 @@ Literals represent fixed values.
 
 Expressions can be enclosed in parentheses to control precedence.
 
-```
+```txt
 ( expression )
 ```
 
@@ -116,7 +116,7 @@ Expressions can be enclosed in parentheses to control precedence.
 
 Function literals define anonymous functions.
 
-```
+```txt
 fn ( parameters ) { statements }
 ```
 
@@ -124,7 +124,7 @@ fn ( parameters ) { statements }
 
 Call expressions invoke functions.
 
-```
+```txt
 expression ( arguments )
 ```
 
@@ -132,7 +132,7 @@ expression ( arguments )
 
 Index expressions access elements of arrays or hashes.
 
-```
+```txt
 expression [ expression ]
 ```
 
@@ -140,11 +140,12 @@ expression [ expression ]
 
 Prefix expressions apply an operator to a single operand.
 
-```
+```txt
 operator expression
 ```
 
 Supported prefix operators:
+
 - `-`: Negation (for integers)
 - `!`: Logical NOT (for booleans)
 
@@ -152,11 +153,12 @@ Supported prefix operators:
 
 Infix expressions apply an operator to two operands.
 
-```
+```txt
 expression operator expression
 ```
 
 Supported infix operators:
+
 - `+`: Addition (for integers and strings)
 - `-`: Subtraction (for integers)
 - `*`: Multiplication (for integers)
@@ -170,7 +172,7 @@ Supported infix operators:
 
 If expressions provide conditional evaluation.
 
-```
+```txt
 if ( expression ) { statements } [ else { statements } ]
 ```
 
@@ -180,7 +182,7 @@ if ( expression ) { statements } [ else { statements } ]
 
 Expression statements evaluate an expression and discard the result.
 
-```
+```txt
 expression ;
 ```
 
@@ -188,7 +190,7 @@ expression ;
 
 Let statements bind a value to an identifier.
 
-```
+```txt
 let identifier = expression ;
 ```
 
@@ -196,7 +198,7 @@ let identifier = expression ;
 
 Return statements return a value from a function.
 
-```
+```txt
 return expression ;
 ```
 
@@ -204,7 +206,7 @@ return expression ;
 
 Block statements group multiple statements together.
 
-```
+```txt
 { statements }
 ```
 

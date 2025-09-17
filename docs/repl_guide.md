@@ -10,7 +10,7 @@ which allows you to interactively write and execute Monke code.
 To start the Monke REPL, run the `monke` executable:
 
 ```bash
-./monke
+monke
 ```
 
 You'll see a welcome message and a prompt (`>>`) where you can start entering Monke code.
@@ -30,14 +30,14 @@ The REPL interface consists of the following elements:
 ### Entering Code
 
 Type your Monke code at the prompt and press Enter to execute it:
-
-```
+  
+```console
 >> let x = 5;
 ```
 
 The REPL will evaluate your code and display the result:
 
-```
+```console
 >> let x = 5;
 5
 ```
@@ -50,7 +50,7 @@ Results are displayed in green text below your input. If there's an error, it wi
 
 You can enter multi-line expressions. The REPL will evaluate the code when you complete the expression:
 
-```
+```console
 >> if (x > 3) {
      x + 10
    } else {
@@ -70,7 +70,7 @@ Previously entered commands and their results remain visible above the current p
 
 You can define variables and use them in expressions:
 
-```
+```console
 >> let name = "World";
 >> let greeting = "Hello, " + name + "!";
 >> greeting
@@ -81,7 +81,7 @@ You can define variables and use them in expressions:
 
 Define and call functions:
 
-```
+```console
 >> let add = fn(a, b) { a + b };
 >> add(5, 10)
 15
@@ -91,7 +91,7 @@ Define and call functions:
 
 Create and manipulate arrays and hash maps:
 
-```
+```console
 >> let myArray = [1, 2, 3, 4, 5];
 >> myArray[2]
 3
@@ -105,7 +105,7 @@ Create and manipulate arrays and hash maps:
 
 Use Monke's built-in functions:
 
-```
+```console
 >> len("hello")
 5
 
@@ -135,7 +135,7 @@ null
 
 Here's an example of a typical REPL session:
 
-```
+```console
 >> let x = 10;
 10
 

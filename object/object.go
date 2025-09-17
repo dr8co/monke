@@ -38,13 +38,13 @@ const (
 	HASH_OBJ         = "HASH"
 )
 
-// ObjectType represents the type of object.
-type ObjectType string
+// Type represents the type of object.
+type Type string
 
 // Object is the interface that wraps the basic operations of all Monke objects.
 // All Monke objects implement this interface.
 type Object interface {
-	Type() ObjectType
+	Type() Type
 	Inspect() string
 }
 
@@ -54,7 +54,7 @@ type Integer struct {
 }
 
 // Type returns the type of the object.
-func (i *Integer) Type() ObjectType { return INTEGER_OBJ }
+func (i *Integer) Type() Type { return INTEGER_OBJ }
 
 // Inspect returns a string representation of the object.
 func (i *Integer) Inspect() string { return strconv.FormatInt(i.Value, 10) }
@@ -65,7 +65,7 @@ type Boolean struct {
 }
 
 // Type returns the type of the object.
-func (b *Boolean) Type() ObjectType { return BOOLEAN_OBJ }
+func (b *Boolean) Type() Type { return BOOLEAN_OBJ }
 
 // Inspect returns a string representation of the object.
 func (b *Boolean) Inspect() string { return strconv.FormatBool(b.Value) }
@@ -78,7 +78,7 @@ type String struct {
 }
 
 // Type returns the type of the object.
-func (s *String) Type() ObjectType { return STRING_OBJ }
+func (s *String) Type() Type { return STRING_OBJ }
 
 // Inspect returns a string representation of the object.
 func (s *String) Inspect() string { return s.Value }
@@ -87,7 +87,7 @@ func (s *String) Inspect() string { return s.Value }
 type Null struct{}
 
 // Type returns the type of the object.
-func (n *Null) Type() ObjectType { return NULL_OBJ }
+func (n *Null) Type() Type { return NULL_OBJ }
 
 // Inspect returns a string representation of the object.
 func (n *Null) Inspect() string { return "null" }
@@ -98,7 +98,7 @@ type ReturnValue struct {
 }
 
 // Type returns the type of the object.
-func (rv *ReturnValue) Type() ObjectType { return RETURN_VALUE_OBJ }
+func (rv *ReturnValue) Type() Type { return RETURN_VALUE_OBJ }
 
 // Inspect returns a string representation of the object.
 func (rv *ReturnValue) Inspect() string { return rv.Value.Inspect() }
@@ -109,7 +109,7 @@ type Error struct {
 }
 
 // Type returns the type of the object.
-func (e *Error) Type() ObjectType { return ERROR_OBJ }
+func (e *Error) Type() Type { return ERROR_OBJ }
 
 // Inspect returns a string representation of the object.
 func (e *Error) Inspect() string { return "ERROR: " + e.Message }
@@ -122,7 +122,7 @@ type Function struct {
 }
 
 // Type returns the type of the object.
-func (f *Function) Type() ObjectType { return FUNCTION_OBJ }
+func (f *Function) Type() Type { return FUNCTION_OBJ }
 
 // Inspect returns a string representation of the object.
 func (f *Function) Inspect() string {
@@ -152,7 +152,7 @@ type Builtin struct {
 }
 
 // Type returns the type of the object.
-func (b *Builtin) Type() ObjectType { return BUILTIN_OBJ }
+func (b *Builtin) Type() Type { return BUILTIN_OBJ }
 
 // Inspect returns a string representation of the object.
 func (b *Builtin) Inspect() string { return "builtin function" }
@@ -163,7 +163,7 @@ type Array struct {
 }
 
 // Type returns the type of the object.
-func (a *Array) Type() ObjectType { return ARRAY_OBJ }
+func (a *Array) Type() Type { return ARRAY_OBJ }
 
 // Inspect returns a string representation of the object.
 func (a *Array) Inspect() string {
@@ -183,7 +183,7 @@ func (a *Array) Inspect() string {
 
 // HashKey represents a hash key.
 type HashKey struct {
-	Type  ObjectType
+	Type  Type
 	Value uint64
 }
 
@@ -237,7 +237,7 @@ type Hash struct {
 }
 
 // Type returns the type of the object.
-func (h *Hash) Type() ObjectType { return HASH_OBJ }
+func (h *Hash) Type() Type { return HASH_OBJ }
 
 // Inspect returns a string representation of the object.
 func (h *Hash) Inspect() string {

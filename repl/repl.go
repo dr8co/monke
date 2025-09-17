@@ -827,15 +827,15 @@ func (m model) highlightCode(code string) string {
 		}
 
 		// Handle newlines and indentation
-		//nolint:staticcheck
-		if tok.Type == token.SEMICOLON {
+		switch tok.Type {
+		case token.SEMICOLON:
 			// If a semicolon follows a closing brace, it was already written
 			// Print a newline after semicolon if the next is not EOF or ELSE
 			if next.Type != token.EOF && next.Type != token.ELSE {
 				s.WriteString("\n")
 				atLineStart = true
 			}
-		} else if tok.Type == token.RBRACE {
+		case token.RBRACE:
 			// Check if the next token is a semicolon
 			//nolint:gocritic
 			if next.Type == token.SEMICOLON {

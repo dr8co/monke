@@ -14,14 +14,17 @@
 // parser to understand the structure of the program.
 package token
 
+// TokenType represents the type of token.
 type TokenType string
 
+// Token represents a single token in the source code.
 type Token struct {
 	Type    TokenType
 	Literal string
 }
 
 const (
+	// Single-character tokens
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 

@@ -53,9 +53,8 @@ type Program struct {
 func (p *Program) TokenLiteral() string {
 	if len(p.Statements) > 0 {
 		return p.Statements[0].TokenLiteral()
-	} else {
-		return ""
 	}
+	return ""
 }
 
 // String returns a string representation of the program.
@@ -312,7 +311,7 @@ func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
 func (fl *FunctionLiteral) String() string {
 	var out strings.Builder
 
-	var params []string
+	params := make([]string, 0, len(fl.Parameters))
 	for _, p := range fl.Parameters {
 		params = append(params, p.String())
 	}
@@ -343,7 +342,7 @@ func (ce *CallExpression) TokenLiteral() string { return ce.Token.Literal }
 // Format: "<function>(<arguments>)"
 func (ce *CallExpression) String() string {
 	var out strings.Builder
-	var args []string
+	args := make([]string, 0, len(ce.Arguments))
 
 	for _, a := range ce.Arguments {
 		args = append(args, a.String())
@@ -388,7 +387,7 @@ func (al *ArrayLiteral) TokenLiteral() string { return al.Token.Literal }
 func (al *ArrayLiteral) String() string {
 	var out strings.Builder
 
-	var elems []string
+	elems := make([]string, 0, len(al.Elements))
 	for _, el := range al.Elements {
 		elems = append(elems, el.String())
 	}
@@ -443,7 +442,7 @@ func (hl *HashLiteral) TokenLiteral() string { return hl.Token.Literal }
 func (hl *HashLiteral) String() string {
 	var out strings.Builder
 
-	var pairs []string
+	pairs := make([]string, 0, len(hl.Pairs))
 	for key, value := range hl.Pairs {
 		pairs = append(pairs, key.String()+":"+value.String())
 	}

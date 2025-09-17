@@ -38,6 +38,7 @@ var (
 	tokenEOF       = token.Token{Type: token.EOF, Literal: ""}
 )
 
+// Lexer represents the lexer for the Monke programming language.
 type Lexer struct {
 	input        string
 	position     int
@@ -84,10 +85,9 @@ func (l *Lexer) NextToken() token.Token {
 			// Use a pre-allocated token for "=="
 			l.readChar() // Advance to the next character after '=='
 			return token.Token{Type: token.EQ, Literal: string(ch) + string('=')}
-		} else {
-			l.readChar() // Advance to the next character after '='
-			return token.Token{Type: token.ASSIGN, Literal: "="}
 		}
+		l.readChar() // Advance to the next character after '='
+		return token.Token{Type: token.ASSIGN, Literal: "="}
 	case '!':
 		if l.peekChar() == '=' {
 			ch := l.ch
@@ -95,10 +95,9 @@ func (l *Lexer) NextToken() token.Token {
 			// Use a pre-allocated token for "!="
 			l.readChar() // Advance to the next character after '!='
 			return token.Token{Type: token.NOT_EQ, Literal: string(ch) + string('=')}
-		} else {
-			l.readChar() // Advance to the next character after '!'
-			return token.Token{Type: token.BANG, Literal: "!"}
 		}
+		l.readChar() // Advance to the next character after '!'
+		return token.Token{Type: token.BANG, Literal: "!"}
 	case '+':
 		l.readChar() // Advance to the next character after '+'
 		return tokenPlus
@@ -158,18 +157,18 @@ func (l *Lexer) NextToken() token.Token {
 				Type:    token.LookupIdent(literal),
 				Literal: literal,
 			}
-		} else if isDigit(l.ch) {
+		}
+		if isDigit(l.ch) {
 			return token.Token{
 				Type:    token.INT,
 				Literal: l.readNumber(),
 			}
-		} else {
-			// For illegal characters, reuse the single char token
-			l.singleCharToken.Type = token.ILLEGAL
-			l.singleCharToken.Literal = string(l.ch)
-			l.readChar() // Advance to the next character after the illegal character
-			return l.singleCharToken
 		}
+		// For illegal characters, reuse the single char token
+		l.singleCharToken.Type = token.ILLEGAL
+		l.singleCharToken.Literal = string(l.ch)
+		l.readChar() // Advance to the next character after the illegal character
+		return l.singleCharToken
 	}
 }
 

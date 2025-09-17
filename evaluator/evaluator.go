@@ -26,9 +26,16 @@ import (
 )
 
 var (
-	TRUE  = &object.Boolean{Value: true}
+
+	// TRUE represents the boolean value 'true' within the Monke language and is used in logical evaluations and comparisons.
+	TRUE = &object.Boolean{Value: true}
+
+	// FALSE represents the boolean value 'false' within the Monke language.
 	FALSE = &object.Boolean{Value: false}
-	NULL  = &object.Null{}
+
+	// NULL represents the singleton null value in the Monke language,
+	// used to denote the absence of a value or a null result.
+	NULL = &object.Null{}
 
 	// Cache for small integer values to reduce allocations
 	// This range covers most common integer values used in programs
@@ -51,6 +58,8 @@ func init() {
 // For statements, it either returns a value (for expression and return statements)
 // or nil (for let statements).
 // If an error occurs during evaluation, it returns an Error object.
+//
+//nolint:gocyclo
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	// Statements
@@ -155,7 +164,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.HashLiteral:
 		return evalHashLiteral(node, env)
-
 	}
 
 	return nil
@@ -266,7 +274,6 @@ func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object
 	}
 
 	return newError("identifier not found: %s", node.Value)
-
 }
 
 func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) object.Object {
@@ -289,13 +296,14 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 	condition := Eval(ie.Condition, env)
 	if isError(condition) {
 		return condition
-	} else if isTruthy(condition) {
-		return Eval(ie.Consequence, env)
-	} else if ie.Alternative != nil {
-		return Eval(ie.Alternative, env)
-	} else {
-		return NULL
 	}
+	if isTruthy(condition) {
+		return Eval(ie.Consequence, env)
+	}
+	if ie.Alternative != nil {
+		return Eval(ie.Alternative, env)
+	}
+	return NULL
 }
 
 func isTruthy(obj object.Object) bool {

@@ -20,10 +20,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/dr8co/monke/evaluator"
 	"github.com/dr8co/monke/lexer"
 	"github.com/dr8co/monke/object"
@@ -170,7 +170,7 @@ func initialModel(username string, options Options) model {
 	ti := textinput.New()
 	ti.Placeholder = "Enter Monkey code"
 	ti.Focus()
-	ti.Width = 80
+	ti.SetWidth(80)
 	ti.Prompt = promptStyle.Render(Prompt)
 
 	s := spinner.New()
@@ -384,16 +384,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.currentInput = ""
 		return m, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		// If we're evaluating, ignore key presses except for Ctrl+C
-		if m.evaluating && msg.Type != tea.KeyCtrlC {
+		if m.evaluating && msg.String() == "ctrl+c" {
 			return m, m.spinner.Tick
 		}
 
-		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc, tea.KeyCtrlD:
+		switch msg.String() {
+		case "ctrl+c", "esc", "ctrl+d":
 			return m, tea.Quit
-		case tea.KeyEnter:
+		case "enter":
 			input := m.textInput.Value()
 			if input == "" {
 				// If we're in multiline mode and the user enters an empty line, evaluate the buffer
@@ -472,7 +472,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View renders the current UI
-func (m model) View() string {
+func (m model) View() tea.View {
 	var s strings.Builder
 
 	// Title
@@ -593,7 +593,7 @@ func (m model) View() string {
 		s.WriteString(historyStyle.Render(helpText))
 	}
 
-	return s.String()
+	return tea.NewView(s.String())
 }
 
 // formatParseErrors formats parser errors into a string with improved readability

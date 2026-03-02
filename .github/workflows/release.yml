@@ -17,6 +17,7 @@ jobs:
       contents: write
       actions: read
       attestations: write
+      artifact-metadata: write
 
     runs-on: ubuntu-latest
     steps:
@@ -48,6 +49,6 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
       - name: attest
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest@v4
         with:
           subject-checksums: ./dist/checksums.txt

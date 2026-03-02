@@ -481,7 +481,7 @@ func (m model) View() string {
 
 	// Welcome message
 	if m.username != "" {
-		s.WriteString(fmt.Sprintf("\nHello %s! Feel free to type in commands\n", m.username))
+		fmt.Fprintf(&s, "\nHello %s! Feel free to type in commands\n", m.username)
 	}
 	s.WriteString("\n")
 
@@ -602,7 +602,7 @@ func formatParseErrors(errors []string) string {
 	s.WriteString("Parser Errors:\n")
 
 	for i, msg := range errors {
-		s.WriteString(fmt.Sprintf("  %d. %s\n", i+1, msg))
+		fmt.Fprintf(&s, "  %d. %s\n", i+1, msg)
 	}
 
 	s.WriteString("\nTips:\n")

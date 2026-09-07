@@ -342,7 +342,8 @@ func (m model) formatError(errorStyle *lipgloss.Style, entry *historyEntry, s *s
 		if m.options.NoColor {
 			s.WriteString(parts[0])
 			s.WriteString("\n")
-			s.WriteString("Tips:" + parts[1])
+			s.WriteString("Tips:")
+			s.WriteString(parts[1])
 		} else {
 			s.WriteString(errorStyle.Render(parts[0]))
 			s.WriteString("\n")
@@ -617,7 +618,9 @@ func formatParseErrors(errors []string) string {
 func formatRuntimeError(errorMsg string) string {
 	var s strings.Builder
 	s.WriteString("Runtime Error:\n")
-	s.WriteString("  " + errorMsg + "\n")
+	s.WriteString("  ")
+	s.WriteString(errorMsg)
+	s.WriteString("\n")
 
 	s.WriteString("\nTips:\n")
 
@@ -798,7 +801,9 @@ func (m model) highlightCode(code string) string {
 			}
 		case token.STRING:
 			if m.options.NoColor {
-				s.WriteString("\"" + tok.Literal + "\"")
+				s.WriteString("\"")
+				s.WriteString(tok.Literal)
+				s.WriteString("\"")
 			} else {
 				s.WriteString(stringStyle.Render("\"" + tok.Literal + "\""))
 			}

@@ -99,7 +99,8 @@ func (ls *LetStatement) TokenLiteral() string { return ls.Token.Literal }
 func (ls *LetStatement) String() string {
 	var out strings.Builder
 
-	out.WriteString(ls.TokenLiteral() + " ")
+	out.WriteString(ls.TokenLiteral())
+	out.WriteString(" ")
 	out.WriteString(ls.Name.String())
 	out.WriteString(" = ")
 
@@ -125,7 +126,8 @@ func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
 // Format: "return <expression>;"
 func (rs *ReturnStatement) String() string {
 	var out strings.Builder
-	out.WriteString(rs.TokenLiteral() + " ")
+	out.WriteString(rs.TokenLiteral())
+	out.WriteString(" ")
 
 	if rs.ReturnValue != nil {
 		out.WriteString(rs.ReturnValue.String())
@@ -217,7 +219,9 @@ func (ie *InfixExpression) String() string {
 
 	out.WriteString("(")
 	out.WriteString(ie.Left.String())
-	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(" ")
+	out.WriteString(ie.Operator)
+	out.WriteString(" ")
 	out.WriteString(ie.Right.String())
 	out.WriteString(")")
 

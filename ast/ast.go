@@ -61,6 +61,7 @@ func (p *Program) TokenLiteral() string {
 // It concatenates the string representations of all statements in the program.
 func (p *Program) String() string {
 	var out strings.Builder
+	out.Grow(len(p.Statements) * 10) // Preallocate space for efficiency
 
 	for _, s := range p.Statements {
 		out.WriteString(s.String())
@@ -98,6 +99,7 @@ func (ls *LetStatement) TokenLiteral() string { return ls.Token.Literal }
 // Format: "let <identifier> = <expression>;"
 func (ls *LetStatement) String() string {
 	var out strings.Builder
+	out.Grow(len(ls.Token.Literal) + len(ls.Name.String()) + 12) // Preallocate space for efficiency
 
 	out.WriteString(ls.TokenLiteral())
 	out.WriteString(" ")
@@ -126,6 +128,8 @@ func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
 // Format: "return <expression>;"
 func (rs *ReturnStatement) String() string {
 	var out strings.Builder
+	out.Grow(len(rs.Token.Literal) + 6) // Preallocate space for efficiency
+
 	out.WriteString(rs.TokenLiteral())
 	out.WriteString(" ")
 
@@ -189,6 +193,7 @@ func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
 // Format: "(<operator><expression>)"
 func (pe *PrefixExpression) String() string {
 	var out strings.Builder
+	out.Grow(len(pe.Operator) + len(pe.Right.String()) + 2) // Preallocate space for efficiency
 
 	out.WriteString("(")
 	out.WriteString(pe.Operator)
@@ -216,6 +221,8 @@ func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
 // Format: "(<left-expression> <operator> <right-expression>)"
 func (ie *InfixExpression) String() string {
 	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(ie.Left.String()) + len(ie.Operator) + len(ie.Right.String()) + 4)
 
 	out.WriteString("(")
 	out.WriteString(ie.Left.String())
@@ -261,6 +268,8 @@ func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
 // Format: "if <condition> <consequence> else <alternative>"
 func (ie *IfExpression) String() string {
 	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(ie.Condition.String()) + len(ie.Consequence.String()) + 10)
 
 	out.WriteString("if")
 	out.WriteString(ie.Condition.String())
@@ -290,6 +299,7 @@ func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
 // It concatenates the string representations of all statements in the block.
 func (bs *BlockStatement) String() string {
 	var out strings.Builder
+	out.Grow(len(bs.Statements) * 10) // Preallocate space for efficiency
 
 	for _, s := range bs.Statements {
 		out.WriteString(s.String())
@@ -313,12 +323,14 @@ func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
 // String returns a string representation of the function literal.
 // Format: "fn(<parameters>) <body>"
 func (fl *FunctionLiteral) String() string {
-	var out strings.Builder
-
 	params := make([]string, 0, len(fl.Parameters))
 	for _, p := range fl.Parameters {
 		params = append(params, p.String())
 	}
+
+	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(params)*10 + len(fl.TokenLiteral()) + len(fl.Body.String()) + 8)
 
 	out.WriteString(fl.TokenLiteral())
 	out.WriteString("(")
@@ -345,12 +357,15 @@ func (ce *CallExpression) TokenLiteral() string { return ce.Token.Literal }
 // String returns a string representation of the function call.
 // Format: "<function>(<arguments>)"
 func (ce *CallExpression) String() string {
-	var out strings.Builder
 	args := make([]string, 0, len(ce.Arguments))
-
 	for _, a := range ce.Arguments {
 		args = append(args, a.String())
 	}
+
+	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(ce.Function.String()) + len(args)*10 + 8)
+
 	out.WriteString(ce.Function.String())
 	out.WriteString("(")
 	out.WriteString(strings.Join(args, ", "))
@@ -389,12 +404,15 @@ func (al *ArrayLiteral) TokenLiteral() string { return al.Token.Literal }
 // String returns a string representation of the array literal.
 // Format: "[<elements>]"
 func (al *ArrayLiteral) String() string {
-	var out strings.Builder
-
 	elems := make([]string, 0, len(al.Elements))
 	for _, el := range al.Elements {
 		elems = append(elems, el.String())
 	}
+
+	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(elems)*10 + 8)
+
 	out.WriteString("[")
 	out.WriteString(strings.Join(elems, ", "))
 	out.WriteString("]")
@@ -419,6 +437,8 @@ func (ie *IndexExpression) TokenLiteral() string { return ie.Token.Literal }
 // Format: "(<left-expression>[<index-expression>])"
 func (ie *IndexExpression) String() string {
 	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(ie.Left.String()) + len(ie.Index.String()) + 4)
 
 	out.WriteString("(")
 	out.WriteString(ie.Left.String())
@@ -444,12 +464,15 @@ func (hl *HashLiteral) TokenLiteral() string { return hl.Token.Literal }
 // String returns a string representation of the hash literal.
 // Format: "{<key1>:<value1>, <key2>:<value2>, ...}"
 func (hl *HashLiteral) String() string {
-	var out strings.Builder
-
 	pairs := make([]string, 0, len(hl.Pairs))
 	for key, value := range hl.Pairs {
 		pairs = append(pairs, key.String()+":"+value.String())
 	}
+
+	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(pairs)*10 + 8)
+
 	out.WriteString("{")
 	out.WriteString(strings.Join(pairs, ", "))
 	out.WriteString("}")

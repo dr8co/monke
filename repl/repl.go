@@ -339,6 +339,7 @@ func (m model) formatError(errorStyle *lipgloss.Style, entry *historyEntry, s *s
 	// Split the output to separate the error message from the tips
 	parts := strings.Split(entry.output, "\nTips:")
 	if len(parts) > 1 {
+		s.Grow(len(parts[0]) + len(parts[1]) + 16)
 		if m.options.NoColor {
 			s.WriteString(parts[0])
 			s.WriteString("\n")
@@ -350,6 +351,7 @@ func (m model) formatError(errorStyle *lipgloss.Style, entry *historyEntry, s *s
 			s.WriteString(errorTipStyle.Render("Tips:" + parts[1]))
 		}
 	} else {
+		s.Grow(len(entry.output) + 16)
 		if m.options.NoColor {
 			s.WriteString(entry.output)
 		} else {
@@ -475,6 +477,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View renders the current UI
 func (m model) View() tea.View {
 	var s strings.Builder
+	s.Grow(1024) // Preallocate space for efficiency
 
 	// Title
 	s.WriteString(m.applyStyle(titleStyle, " Monkey Programming Language REPL "))
@@ -600,6 +603,8 @@ func (m model) View() tea.View {
 // formatParseErrors formats parser errors into a string with improved readability
 func formatParseErrors(errors []string) string {
 	var s strings.Builder
+	s.Grow(256) // Preallocate space for efficiency
+
 	s.WriteString("Parser Errors:\n")
 
 	for i, msg := range errors {
@@ -617,6 +622,8 @@ func formatParseErrors(errors []string) string {
 // formatRuntimeError formats a runtime error into a string with improved readability
 func formatRuntimeError(errorMsg string) string {
 	var s strings.Builder
+	s.Grow(256) // Preallocate space for efficiency
+
 	s.WriteString("Runtime Error:\n")
 	s.WriteString("  ")
 	s.WriteString(errorMsg)
@@ -654,6 +661,7 @@ func formatRuntimeError(errorMsg string) string {
 func (m model) highlightCode(code string) string {
 	l := lexer.New(code)
 	var s strings.Builder
+	s.Grow(len(code) + 128) // Preallocate space for efficiency
 
 	var tokens []token.Token
 	for {

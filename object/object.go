@@ -126,12 +126,14 @@ func (f *Function) Type() Type { return FUNCTION_OBJ }
 
 // Inspect returns a string representation of the object.
 func (f *Function) Inspect() string {
-	var out strings.Builder
 	params := make([]string, 0, len(f.Parameters))
-
 	for _, p := range f.Parameters {
 		params = append(params, p.String())
 	}
+
+	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(params)*10 + 16)
 
 	out.WriteString("fn")
 	out.WriteString("(")
@@ -167,12 +169,14 @@ func (a *Array) Type() Type { return ARRAY_OBJ }
 
 // Inspect returns a string representation of the object.
 func (a *Array) Inspect() string {
-	var out strings.Builder
-
 	elements := make([]string, len(a.Elements))
 	for i, e := range a.Elements {
 		elements[i] = e.Inspect()
 	}
+
+	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(elements)*10 + 8)
 
 	out.WriteString("[")
 	out.WriteString(strings.Join(elements, ", "))
@@ -241,12 +245,14 @@ func (h *Hash) Type() Type { return HASH_OBJ }
 
 // Inspect returns a string representation of the object.
 func (h *Hash) Inspect() string {
-	var out strings.Builder
-
 	pairs := make([]string, 0, len(h.Pairs))
 	for _, pair := range h.Pairs {
 		pairs = append(pairs, fmt.Sprintf("%s: %s", pair.Key.Inspect(), pair.Value.Inspect()))
 	}
+
+	var out strings.Builder
+	// Preallocate space for efficiency
+	out.Grow(len(pairs)*10 + 8)
 
 	out.WriteString("{")
 	out.WriteString(strings.Join(pairs, ", "))

@@ -878,7 +878,7 @@ func (m model) highlightCode(code string) string {
 		// we've already written the semicolon in the RBRACE case, so skip ahead
 		if tok.Type == token.RBRACE && next.Type == token.SEMICOLON {
 			// Skip the next token (semicolon) as we've already processed it
-			//nolint:ineffassign,wastedassign
+			//nolint:ineffassign,wastedassign,staticcheck
 			i++
 		}
 	}

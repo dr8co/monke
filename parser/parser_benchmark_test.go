@@ -8,8 +8,7 @@ import (
 
 // benchmarkParser is a helper function for benchmarking the parser
 func benchmarkParser(input string, b *testing.B) {
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		l := lexer.New(input)
 		p := New(l)
 		p.ParseProgram()

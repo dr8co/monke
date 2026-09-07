@@ -40,9 +40,7 @@ let fibonacci = fn(x) {
   }
 };
 `
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		l := New(input)
 		for {
 			tok := l.NextToken()
@@ -65,12 +63,11 @@ let add = fn(x, y) {
 let result = add(five, ten);
 `
 	largeInput := ""
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		largeInput += input
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		l := New(largeInput)
 		for {
 			tok := l.NextToken()

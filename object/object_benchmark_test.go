@@ -8,8 +8,7 @@ import (
 func BenchmarkStringHashKey(b *testing.B) {
 	s := &String{Value: "Hello World"}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = s.HashKey()
 	}
 }
@@ -18,8 +17,7 @@ func BenchmarkStringHashKey(b *testing.B) {
 func BenchmarkIntegerHashKey(b *testing.B) {
 	integer := &Integer{Value: 42}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = integer.HashKey()
 	}
 }
@@ -28,8 +26,7 @@ func BenchmarkIntegerHashKey(b *testing.B) {
 func BenchmarkBooleanHashKey(b *testing.B) {
 	b1 := &Boolean{Value: true}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = b1.HashKey()
 	}
 }
@@ -51,10 +48,9 @@ func BenchmarkHashCreation(b *testing.B) {
 		{Value: 5},
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		pairs := make(map[HashKey]HashPair)
-		for j := 0; j < 5; j++ {
+		for j := range 5 {
 			key := keys[j]
 			value := values[j]
 			hashed := key.HashKey()
@@ -82,7 +78,7 @@ func BenchmarkHashLookup(b *testing.B) {
 	}
 
 	pairs := make(map[HashKey]HashPair)
-	for j := 0; j < 5; j++ {
+	for j := range 5 {
 		key := keys[j]
 		value := values[j]
 		hashed := key.HashKey()
@@ -90,9 +86,8 @@ func BenchmarkHashLookup(b *testing.B) {
 	}
 	hash := &Hash{Pairs: pairs}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		for j := 0; j < 5; j++ {
+	for b.Loop() {
+		for j := range 5 {
 			key := keys[j]
 			hashed := key.HashKey()
 			_ = hash.Pairs[hashed]

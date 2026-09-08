@@ -33,7 +33,7 @@ It features a REPL (Read-Eval-Print Loop), a lexer, parser, AST, and an evaluato
 
 ### Prerequisites
 
-- Go 1.25 or newer
+- Go 1.27 or newer
 
 ### Installation
 

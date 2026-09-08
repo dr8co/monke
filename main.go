@@ -15,7 +15,7 @@ import (
 	"github.com/dr8co/monke/repl"
 )
 
-const VERSION = "0.9.0"
+const VERSION = "1.0.0"
 
 func main() {
 	// Define command-line flags
